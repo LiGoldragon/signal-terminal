@@ -2,10 +2,10 @@ use signal_core::{FrameBody, Reply, Request, SemaVerb};
 use signal_persona_terminal::{
     Frame, TerminalCapture, TerminalCaptured, TerminalColumns, TerminalConnection,
     TerminalDetached, TerminalDetachment, TerminalDetachmentReason, TerminalEvent,
-    TerminalExitStatus, TerminalExited, TerminalGeneration, TerminalInput, TerminalInputBytes,
-    TerminalName, TerminalReady, TerminalRejected, TerminalRejectionReason, TerminalRequest,
-    TerminalResize, TerminalResized, TerminalRows, TerminalSequence, TerminalTranscriptBytes,
-    TranscriptDelta,
+    TerminalExitStatus, TerminalExited, TerminalGeneration, TerminalInput, TerminalInputAccepted,
+    TerminalInputBytes, TerminalName, TerminalReady, TerminalRejected, TerminalRejectionReason,
+    TerminalRequest, TerminalResize, TerminalResized, TerminalRows, TerminalSequence,
+    TerminalTranscriptBytes, TranscriptDelta,
 };
 
 fn terminal() -> TerminalName {
@@ -88,6 +88,15 @@ fn terminal_capture_round_trips() {
 #[test]
 fn terminal_ready_round_trips() {
     let event = TerminalEvent::TerminalReady(TerminalReady {
+        terminal: terminal(),
+        generation: TerminalGeneration::new(1),
+    });
+    assert_eq!(round_trip_event(event.clone()), event);
+}
+
+#[test]
+fn terminal_input_accepted_round_trips() {
+    let event = TerminalEvent::TerminalInputAccepted(TerminalInputAccepted {
         terminal: terminal(),
         generation: TerminalGeneration::new(1),
     });

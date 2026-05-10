@@ -2,8 +2,9 @@
 //!
 //! Read this file as the public interface of the terminal transport channel.
 //! The harness requests terminal connection, input, resize, detachment, and
-//! capture. The terminal transport pushes readiness, transcript, resize,
-//! detachment, capture, exit, and rejection events back to the harness.
+//! capture. The terminal transport pushes readiness, input acceptance,
+//! transcript, resize, detachment, capture, exit, and rejection events back to
+//! the harness.
 //!
 //! See `ARCHITECTURE.md` for the channel's role and boundaries.
 
@@ -152,6 +153,12 @@ pub struct TerminalReady {
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
+pub struct TerminalInputAccepted {
+    pub terminal: TerminalName,
+    pub generation: TerminalGeneration,
+}
+
+#[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TranscriptDelta {
     pub terminal: TerminalName,
     pub sequence: TerminalSequence,
@@ -219,6 +226,7 @@ signal_channel! {
     }
     reply TerminalEvent {
         TerminalReady(TerminalReady),
+        TerminalInputAccepted(TerminalInputAccepted),
         TranscriptDelta(TranscriptDelta),
         TerminalResized(TerminalResized),
         TerminalCaptured(TerminalCaptured),

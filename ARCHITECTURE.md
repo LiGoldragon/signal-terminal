@@ -13,7 +13,7 @@ invocation in `src/lib.rs`.
 | Event side | terminal transport (`persona-wezterm` today) |
 
 The harness requests connection, input, resize, detachment, and capture
-vectors. The terminal transport emits readiness, transcript, resize,
+vectors. The terminal transport emits readiness, input acceptance, transcript, resize,
 detachment, capture, exit, and rejection events. The steady-state flow is
 transport to harness:
 transcript deltas and lifecycle events are pushed; the harness does not poll.
@@ -35,6 +35,7 @@ Records local to this contract:
 - `TerminalDetachment`
 - `TerminalCapture`
 - `TerminalReady`
+- `TerminalInputAccepted`
 - `TranscriptDelta`
 - `TerminalResized`
 - `TerminalCaptured`
@@ -49,10 +50,11 @@ The records are terminal-transport vocabulary, not router or message records.
 ```text
 TerminalRequest                 TerminalEvent
 ├─ TerminalConnection           ├─ TerminalReady
-├─ TerminalInput                ├─ TranscriptDelta
+├─ TerminalInput                ├─ TerminalInputAccepted
 ├─ TerminalResize               ├─ TerminalResized
 ├─ TerminalDetachment           ├─ TerminalCaptured
-└─ TerminalCapture              ├─ TerminalDetached
+└─ TerminalCapture              ├─ TranscriptDelta
+                                ├─ TerminalDetached
                                 ├─ TerminalExited
                                 └─ TerminalRejected
 ```
