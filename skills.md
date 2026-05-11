@@ -13,7 +13,7 @@ Before changing code in this repo, read:
 - `~/primary/skills/nix-discipline.md`
 - this repo's `ARCHITECTURE.md`
 - the consumers' `ARCHITECTURE.md` files
-  (`persona-harness/`, `persona-wezterm/`)
+  (`persona-harness/`, `persona-terminal/`)
 
 ## What this repo owns
 

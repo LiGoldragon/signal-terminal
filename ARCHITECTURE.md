@@ -5,12 +5,15 @@ It relates one harness-owned terminal session to the backend that owns PTY
 bytes and disposable viewers. The whole channel is one `signal_channel!`
 invocation in `src/lib.rs`.
 
+`persona-terminal` is the transport owner. It consumes `terminal-cell` as the
+low-level one-cell PTY/transcript primitive.
+
 ## Channel
 
 | Side | Component |
 |---|---|
 | Request side | `persona-harness` |
-| Event side | terminal transport (`persona-wezterm` today) |
+| Event side | `persona-terminal` |
 
 The harness requests connection, input, resize, detachment, and capture
 vectors. The terminal transport emits readiness, input acceptance, transcript, resize,
@@ -102,7 +105,7 @@ witnesses.
 
 ## Non-ownership
 
-- No terminal daemon. That is `persona-wezterm` today.
+- No terminal daemon. That is `persona-terminal`.
 - No harness actor. That is `persona-harness`.
 - No router delivery policy. That is `persona-router`.
 - No OS focus policy. That is `persona-system`.
@@ -120,7 +123,7 @@ tests/
 ## See Also
 
 - `persona-harness/ARCHITECTURE.md`
-- `persona-wezterm/ARCHITECTURE.md`
+- `persona-terminal/ARCHITECTURE.md`
 - `persona-router/ARCHITECTURE.md`
 - `~/primary/reports/designer/97-persona-system-vision-and-architecture-development.md`
 - `signal-core/src/channel.rs`
