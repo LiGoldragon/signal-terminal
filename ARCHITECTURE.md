@@ -179,7 +179,10 @@ TerminalEvent::GateAcquired(GateAcquired {
 
 Round-trip tests in `tests/round_trip.rs` cover every request variant, every
 event variant, typed rejection reasons, and representative `From` impl
-witnesses.
+witnesses. Representative NOTA text witnesses cover prompt pattern
+registration, input gate acquisition, gate acquisition events, and worker
+lifecycle snapshots. Manual codec enums are exercised through those witnesses
+plus per-variant frame round trips.
 
 ## Non-ownership
 
@@ -199,7 +202,7 @@ witnesses.
 src/
 └── lib.rs    - payloads + signal_channel! invocation
 tests/
-└── round_trip.rs - per-variant wire-form round trips
+└── round_trip.rs - per-variant frame round trips + NOTA text witnesses
 ```
 
 ## See Also
