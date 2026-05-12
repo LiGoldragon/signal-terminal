@@ -480,6 +480,24 @@ pub struct SubscribeTerminalWorkerLifecycle {
 #[derive(
     Archive, RkyvSerialize, RkyvDeserialize, NotaEnum, Debug, Clone, Copy, PartialEq, Eq, Hash,
 )]
+pub enum TerminalOperationKind {
+    TerminalConnection,
+    TerminalInput,
+    TerminalResize,
+    TerminalDetachment,
+    TerminalCapture,
+    RegisterPromptPattern,
+    UnregisterPromptPattern,
+    ListPromptPatterns,
+    AcquireInputGate,
+    ReleaseInputGate,
+    WriteInjection,
+    SubscribeTerminalWorkerLifecycle,
+}
+
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEnum, Debug, Clone, Copy, PartialEq, Eq, Hash,
+)]
 pub enum TerminalWorkerKind {
     InputWriter,
     OutputFanout,
@@ -888,5 +906,26 @@ signal_channel! {
         InjectionRejected(InjectionRejected),
         TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
         TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent),
+    }
+}
+
+impl TerminalRequest {
+    pub fn operation_kind(&self) -> TerminalOperationKind {
+        match self {
+            Self::TerminalConnection(_) => TerminalOperationKind::TerminalConnection,
+            Self::TerminalInput(_) => TerminalOperationKind::TerminalInput,
+            Self::TerminalResize(_) => TerminalOperationKind::TerminalResize,
+            Self::TerminalDetachment(_) => TerminalOperationKind::TerminalDetachment,
+            Self::TerminalCapture(_) => TerminalOperationKind::TerminalCapture,
+            Self::RegisterPromptPattern(_) => TerminalOperationKind::RegisterPromptPattern,
+            Self::UnregisterPromptPattern(_) => TerminalOperationKind::UnregisterPromptPattern,
+            Self::ListPromptPatterns(_) => TerminalOperationKind::ListPromptPatterns,
+            Self::AcquireInputGate(_) => TerminalOperationKind::AcquireInputGate,
+            Self::ReleaseInputGate(_) => TerminalOperationKind::ReleaseInputGate,
+            Self::WriteInjection(_) => TerminalOperationKind::WriteInjection,
+            Self::SubscribeTerminalWorkerLifecycle(_) => {
+                TerminalOperationKind::SubscribeTerminalWorkerLifecycle
+            }
+        }
     }
 }

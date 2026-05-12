@@ -9,11 +9,11 @@ use signal_persona_terminal::{
     TerminalCapture, TerminalCaptured, TerminalColumns, TerminalConnection, TerminalDetached,
     TerminalDetachment, TerminalDetachmentReason, TerminalEvent, TerminalExitStatus,
     TerminalExited, TerminalGeneration, TerminalInput, TerminalInputAccepted, TerminalInputBytes,
-    TerminalName, TerminalReady, TerminalRejected, TerminalRejectionReason, TerminalRequest,
-    TerminalResize, TerminalResized, TerminalRows, TerminalSequence, TerminalTranscriptBytes,
-    TerminalWorkerKind, TerminalWorkerLifecycle, TerminalWorkerLifecycleEvent,
-    TerminalWorkerLifecycleSnapshot, TerminalWorkerStopReason, TranscriptDelta,
-    UnregisterPromptPattern, WriteInjection,
+    TerminalName, TerminalOperationKind, TerminalReady, TerminalRejected, TerminalRejectionReason,
+    TerminalRequest, TerminalResize, TerminalResized, TerminalRows, TerminalSequence,
+    TerminalTranscriptBytes, TerminalWorkerKind, TerminalWorkerLifecycle,
+    TerminalWorkerLifecycleEvent, TerminalWorkerLifecycleSnapshot, TerminalWorkerStopReason,
+    TranscriptDelta, UnregisterPromptPattern, WriteInjection,
 };
 
 fn terminal() -> TerminalName {
@@ -208,6 +208,104 @@ fn injection_and_worker_requests_round_trip() {
             terminal: terminal(),
         });
     assert_eq!(round_trip_request(subscription.clone()), subscription);
+}
+
+#[test]
+fn terminal_request_exposes_contract_owned_operation_kind() {
+    let cases = [
+        (
+            TerminalRequest::TerminalConnection(TerminalConnection {
+                terminal: terminal(),
+            }),
+            TerminalOperationKind::TerminalConnection,
+        ),
+        (
+            TerminalRequest::TerminalInput(TerminalInput {
+                terminal: terminal(),
+                bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
+            }),
+            TerminalOperationKind::TerminalInput,
+        ),
+        (
+            TerminalRequest::TerminalResize(TerminalResize {
+                terminal: terminal(),
+                rows: TerminalRows::new(32),
+                columns: TerminalColumns::new(120),
+            }),
+            TerminalOperationKind::TerminalResize,
+        ),
+        (
+            TerminalRequest::TerminalDetachment(TerminalDetachment {
+                terminal: terminal(),
+                reason: TerminalDetachmentReason::HumanRequested,
+            }),
+            TerminalOperationKind::TerminalDetachment,
+        ),
+        (
+            TerminalRequest::TerminalCapture(TerminalCapture {
+                terminal: terminal(),
+            }),
+            TerminalOperationKind::TerminalCapture,
+        ),
+        (
+            TerminalRequest::RegisterPromptPattern(RegisterPromptPattern {
+                terminal: terminal(),
+                pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(b"> ".to_vec())),
+            }),
+            TerminalOperationKind::RegisterPromptPattern,
+        ),
+        (
+            TerminalRequest::UnregisterPromptPattern(UnregisterPromptPattern {
+                terminal: terminal(),
+                pattern_id: prompt_pattern_id(),
+            }),
+            TerminalOperationKind::UnregisterPromptPattern,
+        ),
+        (
+            TerminalRequest::ListPromptPatterns(ListPromptPatterns {
+                terminal: terminal(),
+            }),
+            TerminalOperationKind::ListPromptPatterns,
+        ),
+        (
+            TerminalRequest::AcquireInputGate(AcquireInputGate {
+                terminal: terminal(),
+                reason: InputGateReason::new("message delivery"),
+                prompt_pattern_id: Some(prompt_pattern_id()),
+            }),
+            TerminalOperationKind::AcquireInputGate,
+        ),
+        (
+            TerminalRequest::ReleaseInputGate(ReleaseInputGate {
+                terminal: terminal(),
+                lease: input_gate_lease(),
+            }),
+            TerminalOperationKind::ReleaseInputGate,
+        ),
+        (
+            TerminalRequest::WriteInjection(WriteInjection {
+                terminal: terminal(),
+                lease: input_gate_lease(),
+                bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
+            }),
+            TerminalOperationKind::WriteInjection,
+        ),
+        (
+            TerminalRequest::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle {
+                terminal: terminal(),
+            }),
+            TerminalOperationKind::SubscribeTerminalWorkerLifecycle,
+        ),
+    ];
+
+    for (request, operation) in cases {
+        assert_eq!(request.operation_kind(), operation);
+    }
+}
+
+#[test]
+fn terminal_operation_kind_round_trips_through_nota_text() {
+    round_trip_nota(TerminalOperationKind::AcquireInputGate, "AcquireInputGate");
 }
 
 #[test]
