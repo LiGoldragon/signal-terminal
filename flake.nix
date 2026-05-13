@@ -37,6 +37,10 @@
             inherit cargoArtifacts;
             cargoTestExtraArgs = "--test round_trip";
           });
+          test-introspection = craneLib.cargoTest (commonArgs // {
+            inherit cargoArtifacts;
+            cargoTestExtraArgs = "--test introspection";
+          });
           test-doc = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
             cargoTestExtraArgs = "--doc";

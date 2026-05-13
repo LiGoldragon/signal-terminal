@@ -9,7 +9,9 @@ outside this contract: PTY bytes, socket bytes, and viewer pump bytes stay in
 `terminal-cell` / `persona-terminal` implementation code and are not wrapped in
 Signal frames.
 
-The whole channel is one `signal_channel!` invocation in `src/lib.rs`.
+The control channel is one `signal_channel!` invocation in `src/lib.rs`.
+Terminal-owned introspection records live in `src/introspection.rs`; they are
+record vocabulary, not a second runtime owner.
 
 ## Channel
 
@@ -86,6 +88,21 @@ Records local to this contract:
 - `TerminalDetached`
 - `TerminalExited`
 - `TerminalRejected`
+- `TerminalObservationSequence`
+- `TerminalSocketPath`
+- `TerminalViewerName`
+- `TerminalArchiveReason`
+- `TerminalSessionState`
+- `TerminalSessionObservation`
+- `TerminalDeliveryAttemptState`
+- `TerminalDeliveryAttemptObservation`
+- `TerminalEventObservation`
+- `TerminalViewerAttachmentState`
+- `TerminalViewerAttachmentObservation`
+- `TerminalSessionHealthObservation`
+- `TerminalSessionArchiveState`
+- `TerminalSessionArchiveObservation`
+- `TerminalIntrospectionSnapshot`
 
 The records are terminal-transport vocabulary. They are not router, message,
 auth, or terminal raw-data records.
@@ -174,6 +191,26 @@ observations as typed events.
 This contract does not decide whether a write should happen. It only carries the
 transport control facts needed by `persona-terminal` and its consumers.
 
+## Introspection Records
+
+Terminal durable Sema rows that need to be inspectable outside
+`persona-terminal` have typed record shapes in this contract. The component
+still owns its redb file, table declarations, reducers, consistency model, and
+redaction policy. `persona-introspect` asks the running component for these
+records; it does not open `persona-terminal`'s database directly.
+
+`TerminalIntrospectionSnapshot` is the prototype projection bundle over:
+
+- terminal session observations;
+- delivery attempt observations;
+- terminal event observations;
+- viewer attachment observations;
+- session health observations;
+- session archive observations.
+
+These records are not router, harness, message, or terminal-cell records. They
+name terminal-owned inspectable state at the Persona terminal boundary.
+
 ## Versioning
 
 `signal_core::Frame` carries the protocol version. Schema-level changes are
@@ -246,9 +283,11 @@ plus per-variant frame round trips.
 
 ```text
 src/
-└── lib.rs    - payloads + signal_channel! invocation
+├── lib.rs           - control payloads + signal_channel! invocation
+└── introspection.rs - terminal-owned inspectable-state record shapes
 tests/
-└── round_trip.rs - per-variant frame round trips + NOTA text witnesses
+├── round_trip.rs    - per-variant frame round trips + NOTA text witnesses
+└── introspection.rs - rkyv + NOTA witnesses for inspection records
 ```
 
 ## See Also

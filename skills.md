@@ -25,6 +25,9 @@ Before changing code in this repo, read:
 - Input gate lease records used to serialize controlled terminal writes.
 - Write injection acknowledgement and rejection records.
 - Worker lifecycle subscription and observation records.
+- Terminal-owned introspection records for session state, delivery attempts,
+  terminal events, viewer attachments, session health, and session archive
+  projections.
 - The `Frame` type alias.
 - Wire-form round-trip tests.
 
@@ -38,6 +41,9 @@ Before changing code in this repo, read:
 - Prompt interpretation, routing authority, or policy decisions.
 - Router delivery policy.
 - Socket paths, reconnects, or process supervision.
+- Runtime database access, reducers, or consistency policy for introspection.
+  `persona-terminal` owns those; this contract owns only the typed observation
+  vocabulary.
 
 `terminal-cell` is the low-level PTY primitive behind `persona-terminal`; do
 not describe it as an independent production Signal endpoint.
