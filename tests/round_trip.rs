@@ -31,12 +31,16 @@ fn input_gate_lease() -> InputGateLease {
 }
 
 fn round_trip_request(request: TerminalRequest) -> TerminalRequest {
-    let frame = Frame::new(FrameBody::Request(Request::assert(request.clone())));
+    let expected_verb = request.signal_verb();
+    let frame = Frame::new(FrameBody::Request(Request::operation(
+        expected_verb,
+        request.clone(),
+    )));
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
         FrameBody::Request(Request::Operation { verb, payload }) => {
-            assert_eq!(verb, SemaVerb::Assert);
+            assert_eq!(verb, expected_verb);
             payload
         }
         other => panic!("expected request operation, got {other:?}"),
@@ -300,6 +304,99 @@ fn terminal_request_exposes_contract_owned_operation_kind() {
 
     for (request, operation) in cases {
         assert_eq!(request.operation_kind(), operation);
+    }
+}
+
+#[test]
+fn terminal_request_variants_declare_expected_signal_root_verbs() {
+    let cases = [
+        (
+            TerminalRequest::TerminalConnection(TerminalConnection {
+                terminal: terminal(),
+            }),
+            SemaVerb::Assert,
+        ),
+        (
+            TerminalRequest::TerminalInput(TerminalInput {
+                terminal: terminal(),
+                bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
+            }),
+            SemaVerb::Assert,
+        ),
+        (
+            TerminalRequest::TerminalResize(TerminalResize {
+                terminal: terminal(),
+                rows: TerminalRows::new(32),
+                columns: TerminalColumns::new(120),
+            }),
+            SemaVerb::Mutate,
+        ),
+        (
+            TerminalRequest::TerminalDetachment(TerminalDetachment {
+                terminal: terminal(),
+                reason: TerminalDetachmentReason::HumanRequested,
+            }),
+            SemaVerb::Retract,
+        ),
+        (
+            TerminalRequest::TerminalCapture(TerminalCapture {
+                terminal: terminal(),
+            }),
+            SemaVerb::Match,
+        ),
+        (
+            TerminalRequest::RegisterPromptPattern(RegisterPromptPattern {
+                terminal: terminal(),
+                pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(b"> ".to_vec())),
+            }),
+            SemaVerb::Assert,
+        ),
+        (
+            TerminalRequest::UnregisterPromptPattern(UnregisterPromptPattern {
+                terminal: terminal(),
+                pattern_id: prompt_pattern_id(),
+            }),
+            SemaVerb::Retract,
+        ),
+        (
+            TerminalRequest::ListPromptPatterns(ListPromptPatterns {
+                terminal: terminal(),
+            }),
+            SemaVerb::Match,
+        ),
+        (
+            TerminalRequest::AcquireInputGate(AcquireInputGate {
+                terminal: terminal(),
+                reason: InputGateReason::new("message delivery"),
+                prompt_pattern_id: Some(prompt_pattern_id()),
+            }),
+            SemaVerb::Assert,
+        ),
+        (
+            TerminalRequest::ReleaseInputGate(ReleaseInputGate {
+                terminal: terminal(),
+                lease: input_gate_lease(),
+            }),
+            SemaVerb::Retract,
+        ),
+        (
+            TerminalRequest::WriteInjection(WriteInjection {
+                terminal: terminal(),
+                lease: input_gate_lease(),
+                bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
+            }),
+            SemaVerb::Assert,
+        ),
+        (
+            TerminalRequest::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle {
+                terminal: terminal(),
+            }),
+            SemaVerb::Subscribe,
+        ),
+    ];
+
+    for (request, verb) in cases {
+        assert_eq!(request.signal_verb(), verb);
     }
 }
 

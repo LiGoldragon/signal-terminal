@@ -14,7 +14,7 @@
 
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode, NotaEnum, NotaRecord, NotaTransparent};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
-use signal_core::signal_channel;
+use signal_core::{SemaVerb, signal_channel};
 
 pub mod introspection;
 pub use introspection::*;
@@ -913,6 +913,22 @@ signal_channel! {
 }
 
 impl TerminalRequest {
+    pub const fn signal_verb(&self) -> SemaVerb {
+        match self {
+            Self::TerminalConnection(_)
+            | Self::TerminalInput(_)
+            | Self::RegisterPromptPattern(_)
+            | Self::AcquireInputGate(_)
+            | Self::WriteInjection(_) => SemaVerb::Assert,
+            Self::TerminalResize(_) => SemaVerb::Mutate,
+            Self::TerminalDetachment(_)
+            | Self::UnregisterPromptPattern(_)
+            | Self::ReleaseInputGate(_) => SemaVerb::Retract,
+            Self::TerminalCapture(_) | Self::ListPromptPatterns(_) => SemaVerb::Match,
+            Self::SubscribeTerminalWorkerLifecycle(_) => SemaVerb::Subscribe,
+        }
+    }
+
     pub fn operation_kind(&self) -> TerminalOperationKind {
         match self {
             Self::TerminalConnection(_) => TerminalOperationKind::TerminalConnection,

@@ -134,6 +134,33 @@ TerminalRequest                 TerminalEvent
 
 Closed enums; typed rejection reasons; no string-tagged event kinds.
 
+### Signal root verbs
+
+Every `TerminalRequest` variant declares its root verb through
+`TerminalRequest::signal_verb()`. The method currently returns
+`signal_core::SemaVerb`; this crate keeps that spelling until the
+coordinated `signal-core` `SignalVerb` rename lands.
+
+```text
+TerminalConnection                 -> Assert
+TerminalInput                      -> Assert
+TerminalResize                     -> Mutate
+TerminalDetachment                 -> Retract
+TerminalCapture                    -> Match
+RegisterPromptPattern              -> Assert
+UnregisterPromptPattern            -> Retract
+ListPromptPatterns                 -> Match
+AcquireInputGate                   -> Assert
+ReleaseInputGate                   -> Retract
+WriteInjection                     -> Assert
+SubscribeTerminalWorkerLifecycle   -> Subscribe
+```
+
+Terminal reads use `Match`; terminal worker streams use `Subscribe`.
+Control operations that append new work or create leases use `Assert`.
+State changes to existing terminal geometry use `Mutate`, while detach,
+unregister, and release requests use `Retract`.
+
 ### Skeleton honesty (Unimplemented event)
 
 Per
@@ -266,6 +293,7 @@ witnesses. Representative NOTA text witnesses cover prompt pattern
 registration, input gate acquisition, gate acquisition events, and worker
 lifecycle snapshots. Manual codec enums are exercised through those witnesses
 plus per-variant frame round trips.
+Request frame tests assert each variant's `signal_verb()` mapping.
 
 ## Non-ownership
 
