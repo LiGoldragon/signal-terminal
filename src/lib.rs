@@ -496,6 +496,7 @@ pub enum TerminalOperationKind {
     ReleaseInputGate,
     WriteInjection,
     SubscribeTerminalWorkerLifecycle,
+    TerminalWorkerLifecycleRetraction,
 }
 
 #[derive(
@@ -875,40 +876,59 @@ pub enum TerminalRejectionReason {
     TransportFailed,
 }
 
+/// Per-subscription identity for the terminal worker lifecycle stream.
+/// Matches the structural shape of `<Channel>SubscriptionToken` newtypes
+/// per /176 §1 stream-block grammar.
+#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+pub struct TerminalWorkerLifecycleToken {
+    pub terminal: TerminalName,
+}
+
 signal_channel! {
-    request TerminalRequest {
-        Assert TerminalConnection(TerminalConnection),
-        Assert TerminalInput(TerminalInput),
-        Mutate TerminalResize(TerminalResize),
-        Retract TerminalDetachment(TerminalDetachment),
-        Match TerminalCapture(TerminalCapture),
-        Assert RegisterPromptPattern(RegisterPromptPattern),
-        Retract UnregisterPromptPattern(UnregisterPromptPattern),
-        Match ListPromptPatterns(ListPromptPatterns),
-        Assert AcquireInputGate(AcquireInputGate),
-        Retract ReleaseInputGate(ReleaseInputGate),
-        Assert WriteInjection(WriteInjection),
-        Subscribe SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle),
-    }
-    reply TerminalEvent {
-        TerminalReady(TerminalReady),
-        TerminalInputAccepted(TerminalInputAccepted),
-        TranscriptDelta(TranscriptDelta),
-        TerminalResized(TerminalResized),
-        TerminalCaptured(TerminalCaptured),
-        TerminalDetached(TerminalDetached),
-        TerminalExited(TerminalExited),
-        TerminalRejected(TerminalRejected),
-        PromptPatternRegistered(PromptPatternRegistered),
-        PromptPatternUnregistered(PromptPatternUnregistered),
-        PromptPatternList(PromptPatternList),
-        GateAcquired(GateAcquired),
-        GateBusy(GateBusy),
-        GateReleased(GateReleased),
-        InjectionAck(InjectionAck),
-        InjectionRejected(InjectionRejected),
-        TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
-        TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent),
+    channel Terminal {
+        request TerminalRequest {
+            Assert TerminalConnection(TerminalConnection),
+            Assert TerminalInput(TerminalInput),
+            Mutate TerminalResize(TerminalResize),
+            Retract TerminalDetachment(TerminalDetachment),
+            Match TerminalCapture(TerminalCapture),
+            Assert RegisterPromptPattern(RegisterPromptPattern),
+            Retract UnregisterPromptPattern(UnregisterPromptPattern),
+            Match ListPromptPatterns(ListPromptPatterns),
+            Assert AcquireInputGate(AcquireInputGate),
+            Retract ReleaseInputGate(ReleaseInputGate),
+            Assert WriteInjection(WriteInjection),
+            Subscribe SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle) opens TerminalWorkerLifecycleStream,
+            Retract TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken),
+        }
+        reply TerminalReply {
+            TerminalReady(TerminalReady),
+            TerminalInputAccepted(TerminalInputAccepted),
+            TranscriptDelta(TranscriptDelta),
+            TerminalResized(TerminalResized),
+            TerminalCaptured(TerminalCaptured),
+            TerminalDetached(TerminalDetached),
+            TerminalExited(TerminalExited),
+            TerminalRejected(TerminalRejected),
+            PromptPatternRegistered(PromptPatternRegistered),
+            PromptPatternUnregistered(PromptPatternUnregistered),
+            PromptPatternList(PromptPatternList),
+            GateAcquired(GateAcquired),
+            GateBusy(GateBusy),
+            GateReleased(GateReleased),
+            InjectionAck(InjectionAck),
+            InjectionRejected(InjectionRejected),
+            TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
+        }
+        event TerminalEvent {
+            TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent) belongs TerminalWorkerLifecycleStream,
+        }
+        stream TerminalWorkerLifecycleStream {
+            token TerminalWorkerLifecycleToken;
+            opened TerminalWorkerLifecycleSnapshot;
+            event TerminalWorkerLifecycleEvent;
+            close TerminalWorkerLifecycleRetraction;
+        }
     }
 }
 
@@ -928,6 +948,9 @@ impl TerminalRequest {
             Self::WriteInjection(_) => TerminalOperationKind::WriteInjection,
             Self::SubscribeTerminalWorkerLifecycle(_) => {
                 TerminalOperationKind::SubscribeTerminalWorkerLifecycle
+            }
+            Self::TerminalWorkerLifecycleRetraction(_) => {
+                TerminalOperationKind::TerminalWorkerLifecycleRetraction
             }
         }
     }
