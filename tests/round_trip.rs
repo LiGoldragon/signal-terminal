@@ -8,15 +8,16 @@ use signal_persona_terminal::{
     InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason,
     ListPromptPatterns, PromptPattern, PromptPatternBytes, PromptPatternEntry, PromptPatternId,
     PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered, PromptState,
-    RegisterPromptPattern, ReleaseInputGate, SubscribeTerminalWorkerLifecycle, TerminalByteCount,
-    TerminalCapture, TerminalCaptured, TerminalColumns, TerminalConnection, TerminalDetached,
-    TerminalDetachment, TerminalDetachmentReason, TerminalEvent, TerminalExitStatus,
-    TerminalExited, TerminalFrame as Frame, TerminalFrameBody as FrameBody, TerminalGeneration,
-    TerminalInput, TerminalInputAccepted, TerminalInputBytes, TerminalName, TerminalOperationKind,
-    TerminalReady, TerminalRejected, TerminalRejectionReason, TerminalReply, TerminalRequest,
-    TerminalResize, TerminalResized, TerminalRows, TerminalSequence, TerminalTranscriptBytes,
-    TerminalWorkerKind, TerminalWorkerLifecycle, TerminalWorkerLifecycleEvent,
-    TerminalWorkerLifecycleSnapshot, TerminalWorkerStopReason, TranscriptDelta,
+    RegisterPromptPattern, ReleaseInputGate, SubscribeTerminalWorkerLifecycle,
+    SubscriptionRetracted, TerminalByteCount, TerminalCapture, TerminalCaptured, TerminalColumns,
+    TerminalConnection, TerminalDetached, TerminalDetachment, TerminalDetachmentReason,
+    TerminalEvent, TerminalExitStatus, TerminalExited, TerminalFrame as Frame,
+    TerminalFrameBody as FrameBody, TerminalGeneration, TerminalInput, TerminalInputAccepted,
+    TerminalInputBytes, TerminalName, TerminalOperationKind, TerminalReady, TerminalRejected,
+    TerminalRejectionReason, TerminalReply, TerminalRequest, TerminalResize, TerminalResized,
+    TerminalRows, TerminalSequence, TerminalTranscriptBytes, TerminalWorkerKind,
+    TerminalWorkerLifecycle, TerminalWorkerLifecycleEvent, TerminalWorkerLifecycleSnapshot,
+    TerminalWorkerLifecycleToken, TerminalWorkerStopReason, TranscriptDelta,
     UnregisterPromptPattern, WriteInjection,
 };
 
@@ -710,6 +711,20 @@ fn from_impl_lifts_gate_acquisition_into_request() {
     };
     let request: TerminalRequest = payload.clone().into();
     assert_eq!(request, TerminalRequest::AcquireInputGate(payload));
+}
+
+#[test]
+fn subscription_retracted_reply_round_trips_through_length_prefixed_frame() {
+    let token = TerminalWorkerLifecycleToken {
+        terminal: terminal(),
+    };
+    let reply = TerminalReply::SubscriptionRetracted(SubscriptionRetracted {
+        token: token.clone(),
+    });
+    assert_eq!(round_trip_reply(reply.clone()), reply);
+
+    let lifted: TerminalReply = SubscriptionRetracted { token }.into();
+    assert!(matches!(lifted, TerminalReply::SubscriptionRetracted(_)));
 }
 
 #[test]

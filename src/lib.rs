@@ -884,6 +884,15 @@ pub struct TerminalWorkerLifecycleToken {
     pub terminal: TerminalName,
 }
 
+/// Typed acknowledgement that a worker-lifecycle subscription has been
+/// retracted. Returned in reply to `TerminalWorkerLifecycleRetraction`.
+/// Carries the retracted token so callers can match the ack to the
+/// request they sent.
+#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+pub struct SubscriptionRetracted {
+    pub token: TerminalWorkerLifecycleToken,
+}
+
 signal_channel! {
     channel Terminal {
         request TerminalRequest {
@@ -919,6 +928,7 @@ signal_channel! {
             InjectionAck(InjectionAck),
             InjectionRejected(InjectionRejected),
             TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
+            SubscriptionRetracted(SubscriptionRetracted),
         }
         event TerminalEvent {
             TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent) belongs TerminalWorkerLifecycleStream,
@@ -1043,6 +1053,11 @@ impl From<InjectionRejected> for TerminalReply {
 impl From<TerminalWorkerLifecycleSnapshot> for TerminalReply {
     fn from(payload: TerminalWorkerLifecycleSnapshot) -> Self {
         Self::TerminalWorkerLifecycleSnapshot(payload)
+    }
+}
+impl From<SubscriptionRetracted> for TerminalReply {
+    fn from(payload: SubscriptionRetracted) -> Self {
+        Self::SubscriptionRetracted(payload)
     }
 }
 
