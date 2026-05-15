@@ -1057,41 +1057,67 @@ impl From<TerminalWorkerLifecycleEvent> for TerminalEvent {
 // Hand-written From<Payload> for TerminalRequest. Same pattern — every
 // request variant carries a unique payload type per /176 §3.
 impl From<TerminalConnection> for TerminalRequest {
-    fn from(p: TerminalConnection) -> Self { Self::TerminalConnection(p) }
+    fn from(p: TerminalConnection) -> Self {
+        Self::TerminalConnection(p)
+    }
 }
 impl From<TerminalInput> for TerminalRequest {
-    fn from(p: TerminalInput) -> Self { Self::TerminalInput(p) }
+    fn from(p: TerminalInput) -> Self {
+        Self::TerminalInput(p)
+    }
 }
 impl From<TerminalResize> for TerminalRequest {
-    fn from(p: TerminalResize) -> Self { Self::TerminalResize(p) }
+    fn from(p: TerminalResize) -> Self {
+        Self::TerminalResize(p)
+    }
 }
 impl From<TerminalDetachment> for TerminalRequest {
-    fn from(p: TerminalDetachment) -> Self { Self::TerminalDetachment(p) }
+    fn from(p: TerminalDetachment) -> Self {
+        Self::TerminalDetachment(p)
+    }
 }
 impl From<TerminalCapture> for TerminalRequest {
-    fn from(p: TerminalCapture) -> Self { Self::TerminalCapture(p) }
+    fn from(p: TerminalCapture) -> Self {
+        Self::TerminalCapture(p)
+    }
 }
 impl From<RegisterPromptPattern> for TerminalRequest {
-    fn from(p: RegisterPromptPattern) -> Self { Self::RegisterPromptPattern(p) }
+    fn from(p: RegisterPromptPattern) -> Self {
+        Self::RegisterPromptPattern(p)
+    }
 }
 impl From<UnregisterPromptPattern> for TerminalRequest {
-    fn from(p: UnregisterPromptPattern) -> Self { Self::UnregisterPromptPattern(p) }
+    fn from(p: UnregisterPromptPattern) -> Self {
+        Self::UnregisterPromptPattern(p)
+    }
 }
 impl From<ListPromptPatterns> for TerminalRequest {
-    fn from(p: ListPromptPatterns) -> Self { Self::ListPromptPatterns(p) }
+    fn from(p: ListPromptPatterns) -> Self {
+        Self::ListPromptPatterns(p)
+    }
 }
 impl From<AcquireInputGate> for TerminalRequest {
-    fn from(p: AcquireInputGate) -> Self { Self::AcquireInputGate(p) }
+    fn from(p: AcquireInputGate) -> Self {
+        Self::AcquireInputGate(p)
+    }
 }
 impl From<ReleaseInputGate> for TerminalRequest {
-    fn from(p: ReleaseInputGate) -> Self { Self::ReleaseInputGate(p) }
+    fn from(p: ReleaseInputGate) -> Self {
+        Self::ReleaseInputGate(p)
+    }
 }
 impl From<WriteInjection> for TerminalRequest {
-    fn from(p: WriteInjection) -> Self { Self::WriteInjection(p) }
+    fn from(p: WriteInjection) -> Self {
+        Self::WriteInjection(p)
+    }
 }
 impl From<SubscribeTerminalWorkerLifecycle> for TerminalRequest {
-    fn from(p: SubscribeTerminalWorkerLifecycle) -> Self { Self::SubscribeTerminalWorkerLifecycle(p) }
+    fn from(p: SubscribeTerminalWorkerLifecycle) -> Self {
+        Self::SubscribeTerminalWorkerLifecycle(p)
+    }
 }
 impl From<TerminalWorkerLifecycleToken> for TerminalRequest {
-    fn from(p: TerminalWorkerLifecycleToken) -> Self { Self::TerminalWorkerLifecycleRetraction(p) }
+    fn from(p: TerminalWorkerLifecycleToken) -> Self {
+        Self::TerminalWorkerLifecycleRetraction(p)
+    }
 }

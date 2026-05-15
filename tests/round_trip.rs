@@ -1,19 +1,23 @@
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
-use signal_core::{FrameBody, Reply, Request, SignalVerb};
+use signal_core::{
+    ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
+    SignalVerb, StreamEventIdentifier, SubReply, SubscriptionTokenInner,
+};
 use signal_persona_terminal::{
-    AcquireInputGate, Frame, GateAcquired, GateBusy, GateReleased, InjectionAck, InjectionRejected,
+    AcquireInputGate, GateAcquired, GateBusy, GateReleased, InjectionAck, InjectionRejected,
     InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason,
     ListPromptPatterns, PromptPattern, PromptPatternBytes, PromptPatternEntry, PromptPatternId,
     PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered, PromptState,
     RegisterPromptPattern, ReleaseInputGate, SubscribeTerminalWorkerLifecycle, TerminalByteCount,
     TerminalCapture, TerminalCaptured, TerminalColumns, TerminalConnection, TerminalDetached,
     TerminalDetachment, TerminalDetachmentReason, TerminalEvent, TerminalExitStatus,
-    TerminalExited, TerminalGeneration, TerminalInput, TerminalInputAccepted, TerminalInputBytes,
-    TerminalName, TerminalOperationKind, TerminalReady, TerminalRejected, TerminalRejectionReason,
-    TerminalRequest, TerminalResize, TerminalResized, TerminalRows, TerminalSequence,
-    TerminalTranscriptBytes, TerminalWorkerKind, TerminalWorkerLifecycle,
-    TerminalWorkerLifecycleEvent, TerminalWorkerLifecycleSnapshot, TerminalWorkerStopReason,
-    TranscriptDelta, UnregisterPromptPattern, WriteInjection,
+    TerminalExited, TerminalFrame as Frame, TerminalFrameBody as FrameBody, TerminalGeneration,
+    TerminalInput, TerminalInputAccepted, TerminalInputBytes, TerminalName, TerminalOperationKind,
+    TerminalReady, TerminalRejected, TerminalRejectionReason, TerminalReply, TerminalRequest,
+    TerminalResize, TerminalResized, TerminalRows, TerminalSequence, TerminalTranscriptBytes,
+    TerminalWorkerKind, TerminalWorkerLifecycle, TerminalWorkerLifecycleEvent,
+    TerminalWorkerLifecycleSnapshot, TerminalWorkerStopReason, TranscriptDelta,
+    UnregisterPromptPattern, WriteInjection,
 };
 
 fn terminal() -> TerminalName {
@@ -30,27 +34,73 @@ fn input_gate_lease() -> InputGateLease {
     }
 }
 
+fn exchange() -> ExchangeIdentifier {
+    ExchangeIdentifier::new(
+        SessionEpoch::new(1),
+        ExchangeLane::Connector,
+        LaneSequence::first(),
+    )
+}
+
+fn stream_event() -> StreamEventIdentifier {
+    StreamEventIdentifier::new(
+        SessionEpoch::new(1),
+        ExchangeLane::Acceptor,
+        LaneSequence::first(),
+    )
+}
+
 fn round_trip_request(request: TerminalRequest) -> TerminalRequest {
     let expected_verb = request.signal_verb();
-    let frame = Frame::new(FrameBody::Request(request.into_signal_request()));
+    let frame = Frame::new(FrameBody::Request {
+        exchange: exchange(),
+        request: request.into_request(),
+    });
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
-        FrameBody::Request(Request::Operation { verb, payload }) => {
-            assert_eq!(verb, expected_verb);
-            payload
+        FrameBody::Request { request, .. } => {
+            let operation = request.operations().head();
+            assert_eq!(operation.verb, expected_verb);
+            operation.payload.clone()
         }
         other => panic!("expected request operation, got {other:?}"),
     }
 }
 
-fn round_trip_event(event: TerminalEvent) -> TerminalEvent {
-    let frame = Frame::new(FrameBody::Reply(Reply::operation(event.clone())));
+fn round_trip_reply(reply: TerminalReply) -> TerminalReply {
+    let frame = Frame::new(FrameBody::Reply {
+        exchange: exchange(),
+        reply: Reply::completed(NonEmpty::single(SubReply::Ok {
+            verb: SignalVerb::Assert,
+            payload: reply,
+        })),
+    });
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
-        FrameBody::Reply(Reply::Operation(event)) => event,
+        FrameBody::Reply { reply, .. } => match reply {
+            Reply::Accepted { per_operation, .. } => match per_operation.into_head() {
+                SubReply::Ok { payload, .. } => payload,
+                other => panic!("expected accepted reply payload, got {other:?}"),
+            },
+            other => panic!("expected accepted reply, got {other:?}"),
+        },
         other => panic!("expected reply operation, got {other:?}"),
+    }
+}
+
+fn round_trip_event(event: TerminalEvent) -> TerminalEvent {
+    let frame = Frame::new(FrameBody::SubscriptionEvent {
+        event_identifier: stream_event(),
+        token: SubscriptionTokenInner::new(1),
+        event,
+    });
+    let bytes = frame.encode_length_prefixed().expect("encode");
+    let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
+    match decoded.into_body() {
+        FrameBody::SubscriptionEvent { event, .. } => event,
+        other => panic!("expected subscription event, got {other:?}"),
     }
 }
 
@@ -404,61 +454,61 @@ fn terminal_operation_kind_round_trips_through_nota_text() {
 
 #[test]
 fn terminal_ready_round_trips() {
-    let event = TerminalEvent::TerminalReady(TerminalReady {
+    let reply = TerminalReply::TerminalReady(TerminalReady {
         terminal: terminal(),
         generation: TerminalGeneration::new(1),
     });
-    assert_eq!(round_trip_event(event.clone()), event);
+    assert_eq!(round_trip_reply(reply.clone()), reply);
 }
 
 #[test]
 fn terminal_input_accepted_round_trips() {
-    let event = TerminalEvent::TerminalInputAccepted(TerminalInputAccepted {
+    let reply = TerminalReply::TerminalInputAccepted(TerminalInputAccepted {
         terminal: terminal(),
         generation: TerminalGeneration::new(1),
     });
-    assert_eq!(round_trip_event(event.clone()), event);
+    assert_eq!(round_trip_reply(reply.clone()), reply);
 }
 
 #[test]
 fn transcript_delta_round_trips() {
-    let event = TerminalEvent::TranscriptDelta(TranscriptDelta {
+    let reply = TerminalReply::TranscriptDelta(TranscriptDelta {
         terminal: terminal(),
         sequence: TerminalSequence::new(7),
         bytes: TerminalTranscriptBytes::new(b"hello\r\n".to_vec()),
     });
-    assert_eq!(round_trip_event(event.clone()), event);
+    assert_eq!(round_trip_reply(reply.clone()), reply);
 }
 
 #[test]
 fn terminal_resized_round_trips() {
-    let event = TerminalEvent::TerminalResized(TerminalResized {
+    let reply = TerminalReply::TerminalResized(TerminalResized {
         terminal: terminal(),
         rows: TerminalRows::new(40),
         columns: TerminalColumns::new(100),
         generation: TerminalGeneration::new(2),
     });
-    assert_eq!(round_trip_event(event.clone()), event);
+    assert_eq!(round_trip_reply(reply.clone()), reply);
 }
 
 #[test]
 fn terminal_captured_round_trips() {
-    let event = TerminalEvent::TerminalCaptured(TerminalCaptured {
+    let reply = TerminalReply::TerminalCaptured(TerminalCaptured {
         terminal: terminal(),
         generation: TerminalGeneration::new(3),
         bytes: TerminalTranscriptBytes::new(b"screen".to_vec()),
     });
-    assert_eq!(round_trip_event(event.clone()), event);
+    assert_eq!(round_trip_reply(reply.clone()), reply);
 }
 
 #[test]
 fn terminal_detached_round_trips() {
-    let event = TerminalEvent::TerminalDetached(TerminalDetached {
+    let reply = TerminalReply::TerminalDetached(TerminalDetached {
         terminal: terminal(),
         generation: TerminalGeneration::new(4),
         reason: TerminalDetachmentReason::HarnessStopped,
     });
-    assert_eq!(round_trip_event(event.clone()), event);
+    assert_eq!(round_trip_reply(reply.clone()), reply);
 }
 
 #[test]
@@ -468,12 +518,12 @@ fn terminal_exited_round_trips_for_each_status() {
         TerminalExitStatus::Signaled { signal: 15 },
         TerminalExitStatus::StatusUnavailable,
     ] {
-        let event = TerminalEvent::TerminalExited(TerminalExited {
+        let reply = TerminalReply::TerminalExited(TerminalExited {
             terminal: terminal(),
             generation: TerminalGeneration::new(5),
             status: status.clone(),
         });
-        assert_eq!(round_trip_event(event.clone()), event);
+        assert_eq!(round_trip_reply(reply.clone()), reply);
     }
 }
 
@@ -486,36 +536,36 @@ fn terminal_rejected_round_trips_for_each_reason() {
         TerminalRejectionReason::CaptureRejected,
         TerminalRejectionReason::TransportFailed,
     ] {
-        let event = TerminalEvent::TerminalRejected(TerminalRejected {
+        let reply = TerminalReply::TerminalRejected(TerminalRejected {
             terminal: terminal(),
             reason: reason.clone(),
         });
-        assert_eq!(round_trip_event(event.clone()), event);
+        assert_eq!(round_trip_reply(reply.clone()), reply);
     }
 }
 
 #[test]
 fn prompt_pattern_events_round_trip() {
-    let registered = TerminalEvent::PromptPatternRegistered(PromptPatternRegistered {
+    let registered = TerminalReply::PromptPatternRegistered(PromptPatternRegistered {
         terminal: terminal(),
         pattern_id: prompt_pattern_id(),
     });
-    assert_eq!(round_trip_event(registered.clone()), registered);
+    assert_eq!(round_trip_reply(registered.clone()), registered);
 
-    let unregistered = TerminalEvent::PromptPatternUnregistered(PromptPatternUnregistered {
+    let unregistered = TerminalReply::PromptPatternUnregistered(PromptPatternUnregistered {
         terminal: terminal(),
         pattern_id: prompt_pattern_id(),
     });
-    assert_eq!(round_trip_event(unregistered.clone()), unregistered);
+    assert_eq!(round_trip_reply(unregistered.clone()), unregistered);
 
-    let list = TerminalEvent::PromptPatternList(PromptPatternList {
+    let list = TerminalReply::PromptPatternList(PromptPatternList {
         terminal: terminal(),
         entries: vec![PromptPatternEntry {
             pattern_id: prompt_pattern_id(),
             pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(b"> ".to_vec())),
         }],
     });
-    assert_eq!(round_trip_event(list.clone()), list);
+    assert_eq!(round_trip_reply(list.clone()), list);
 }
 
 #[test]
@@ -527,32 +577,32 @@ fn input_gate_events_round_trip() {
             trailing_count: TerminalByteCount::new(3),
         },
     ] {
-        let acquired = TerminalEvent::GateAcquired(GateAcquired {
+        let acquired = TerminalReply::GateAcquired(GateAcquired {
             terminal: terminal(),
             lease: input_gate_lease(),
             prompt_state: prompt_state.clone(),
         });
-        assert_eq!(round_trip_event(acquired.clone()), acquired);
+        assert_eq!(round_trip_reply(acquired.clone()), acquired);
     }
 
-    let busy = TerminalEvent::GateBusy(GateBusy {
+    let busy = TerminalReply::GateBusy(GateBusy {
         terminal: terminal(),
         current_holder: InputGateLeaseId::new(7),
     });
-    assert_eq!(round_trip_event(busy.clone()), busy);
+    assert_eq!(round_trip_reply(busy.clone()), busy);
 
-    let released = TerminalEvent::GateReleased(GateReleased {
+    let released = TerminalReply::GateReleased(GateReleased {
         terminal: terminal(),
         lease: input_gate_lease(),
         cached_human_bytes: TerminalByteCount::new(12),
     });
-    assert_eq!(round_trip_event(released.clone()), released);
+    assert_eq!(round_trip_reply(released.clone()), released);
 }
 
 #[test]
 fn gate_acquired_event_round_trips_through_nota_text() {
     round_trip_nota(
-        TerminalEvent::GateAcquired(GateAcquired {
+        TerminalReply::GateAcquired(GateAcquired {
             terminal: terminal(),
             lease: input_gate_lease(),
             prompt_state: PromptState::Clean,
@@ -563,12 +613,12 @@ fn gate_acquired_event_round_trips_through_nota_text() {
 
 #[test]
 fn injection_events_round_trip() {
-    let ack = TerminalEvent::InjectionAck(InjectionAck {
+    let ack = TerminalReply::InjectionAck(InjectionAck {
         terminal: terminal(),
         generation: TerminalGeneration::new(5),
         sequence: TerminalSequence::new(9),
     });
-    assert_eq!(round_trip_event(ack.clone()), ack);
+    assert_eq!(round_trip_reply(ack.clone()), ack);
 
     for reason in [
         InjectionRejectionReason::UnknownTerminal,
@@ -577,11 +627,11 @@ fn injection_events_round_trip() {
         InjectionRejectionReason::DirtyPrompt,
         InjectionRejectionReason::TransportFailed,
     ] {
-        let rejected = TerminalEvent::InjectionRejected(InjectionRejected {
+        let rejected = TerminalReply::InjectionRejected(InjectionRejected {
             terminal: terminal(),
             reason: reason.clone(),
         });
-        assert_eq!(round_trip_event(rejected.clone()), rejected);
+        assert_eq!(round_trip_reply(rejected.clone()), rejected);
     }
 }
 
@@ -600,11 +650,11 @@ fn worker_lifecycle_events_round_trip() {
     ];
 
     let snapshot =
-        TerminalEvent::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot {
+        TerminalReply::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot {
             terminal: terminal(),
             observations: observations.clone(),
         });
-    assert_eq!(round_trip_event(snapshot.clone()), snapshot);
+    assert_eq!(round_trip_reply(snapshot.clone()), snapshot);
 
     let event = TerminalEvent::TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent {
         terminal: terminal(),
@@ -616,7 +666,7 @@ fn worker_lifecycle_events_round_trip() {
 #[test]
 fn worker_lifecycle_snapshot_round_trips_through_nota_text() {
     round_trip_nota(
-        TerminalEvent::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot {
+        TerminalReply::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot {
             terminal: terminal(),
             observations: vec![
                 TerminalWorkerLifecycle::Started(TerminalWorkerKind::InputWriter),
@@ -641,14 +691,14 @@ fn from_impl_lifts_terminal_input_into_request() {
 }
 
 #[test]
-fn from_impl_lifts_transcript_delta_into_event() {
+fn from_impl_lifts_transcript_delta_into_reply() {
     let payload = TranscriptDelta {
         terminal: terminal(),
         sequence: TerminalSequence::new(9),
         bytes: TerminalTranscriptBytes::new(b"via from".to_vec()),
     };
-    let event: TerminalEvent = payload.clone().into();
-    assert_eq!(event, TerminalEvent::TranscriptDelta(payload));
+    let reply: TerminalReply = payload.clone().into();
+    assert_eq!(reply, TerminalReply::TranscriptDelta(payload));
 }
 
 #[test]
@@ -663,14 +713,14 @@ fn from_impl_lifts_gate_acquisition_into_request() {
 }
 
 #[test]
-fn from_impl_lifts_injection_ack_into_event() {
+fn from_impl_lifts_injection_ack_into_reply() {
     let payload = InjectionAck {
         terminal: terminal(),
         generation: TerminalGeneration::new(1),
         sequence: TerminalSequence::new(1),
     };
-    let event: TerminalEvent = payload.clone().into();
-    assert_eq!(event, TerminalEvent::InjectionAck(payload));
+    let reply: TerminalReply = payload.clone().into();
+    assert_eq!(reply, TerminalReply::InjectionAck(payload));
 }
 
 #[test]

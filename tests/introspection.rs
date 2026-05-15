@@ -1,10 +1,10 @@
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 use signal_persona_terminal::{
-    TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState, TerminalEvent,
-    TerminalEventObservation, TerminalGeneration, TerminalInputAccepted,
-    TerminalIntrospectionSnapshot, TerminalName, TerminalObservationSequence,
-    TerminalOperationKind, TerminalSessionArchiveObservation, TerminalSessionArchiveState,
+    TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState, TerminalEventObservation,
+    TerminalGeneration, TerminalInputAccepted, TerminalIntrospectionSnapshot, TerminalName,
+    TerminalObservationSequence, TerminalOperationKind, TerminalReply,
+    TerminalSessionArchiveObservation, TerminalSessionArchiveState,
     TerminalSessionHealthObservation, TerminalSessionObservation, TerminalSessionState,
     TerminalViewerAttachmentObservation, TerminalViewerAttachmentState,
 };
@@ -76,7 +76,7 @@ fn terminal_delivery_attempt_observation_round_trips() {
 
 #[test]
 fn terminal_event_observation_round_trips() {
-    let event = TerminalEvent::from(TerminalInputAccepted {
+    let event = TerminalReply::from(TerminalInputAccepted {
         terminal: terminal(),
         generation: TerminalGeneration::new(3),
     });

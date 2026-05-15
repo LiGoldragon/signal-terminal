@@ -139,7 +139,7 @@ Closed enums; typed rejection reasons; no string-tagged event kinds.
 Every `TerminalRequest` variant declares its root verb in the
 `signal_channel!` declaration. `signal-core` generates
 `TerminalRequest::signal_verb()` and
-`TerminalRequest::into_signal_request()` from that declaration.
+`TerminalRequest::into_request()` from that declaration.
 
 ```text
 TerminalConnection                 -> Assert
