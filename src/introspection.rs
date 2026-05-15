@@ -8,7 +8,7 @@ use nota_codec::{NotaEnum, NotaRecord, NotaTransparent};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 
 use crate::{
-    TerminalEvent, TerminalGeneration, TerminalName, TerminalOperationKind, TerminalSequence,
+    TerminalGeneration, TerminalName, TerminalOperationKind, TerminalReply, TerminalSequence,
 };
 
 #[derive(
@@ -188,14 +188,14 @@ impl TerminalDeliveryAttemptObservation {
 pub struct TerminalEventObservation {
     pub sequence: TerminalObservationSequence,
     pub terminal: TerminalName,
-    pub event: TerminalEvent,
+    pub event: TerminalReply,
 }
 
 impl TerminalEventObservation {
     pub fn new(
         sequence: TerminalObservationSequence,
         terminal: TerminalName,
-        event: TerminalEvent,
+        event: TerminalReply,
     ) -> Self {
         Self {
             sequence,
@@ -212,7 +212,7 @@ impl TerminalEventObservation {
         &self.terminal
     }
 
-    pub fn event(&self) -> &TerminalEvent {
+    pub fn event(&self) -> &TerminalReply {
         &self.event
     }
 }
