@@ -955,3 +955,101 @@ impl TerminalRequest {
         }
     }
 }
+
+// Hand-written `From<Payload> for TerminalReply` impls per /176 §3.
+// Every reply variant carries a unique payload type, so the
+// conversions are unambiguous; the proc-macro deliberately does not
+// emit blanket From impls — this is the contract opting in.
+impl From<TerminalReady> for TerminalReply {
+    fn from(payload: TerminalReady) -> Self {
+        Self::TerminalReady(payload)
+    }
+}
+impl From<TerminalInputAccepted> for TerminalReply {
+    fn from(payload: TerminalInputAccepted) -> Self {
+        Self::TerminalInputAccepted(payload)
+    }
+}
+impl From<TranscriptDelta> for TerminalReply {
+    fn from(payload: TranscriptDelta) -> Self {
+        Self::TranscriptDelta(payload)
+    }
+}
+impl From<TerminalResized> for TerminalReply {
+    fn from(payload: TerminalResized) -> Self {
+        Self::TerminalResized(payload)
+    }
+}
+impl From<TerminalCaptured> for TerminalReply {
+    fn from(payload: TerminalCaptured) -> Self {
+        Self::TerminalCaptured(payload)
+    }
+}
+impl From<TerminalDetached> for TerminalReply {
+    fn from(payload: TerminalDetached) -> Self {
+        Self::TerminalDetached(payload)
+    }
+}
+impl From<TerminalExited> for TerminalReply {
+    fn from(payload: TerminalExited) -> Self {
+        Self::TerminalExited(payload)
+    }
+}
+impl From<TerminalRejected> for TerminalReply {
+    fn from(payload: TerminalRejected) -> Self {
+        Self::TerminalRejected(payload)
+    }
+}
+impl From<PromptPatternRegistered> for TerminalReply {
+    fn from(payload: PromptPatternRegistered) -> Self {
+        Self::PromptPatternRegistered(payload)
+    }
+}
+impl From<PromptPatternUnregistered> for TerminalReply {
+    fn from(payload: PromptPatternUnregistered) -> Self {
+        Self::PromptPatternUnregistered(payload)
+    }
+}
+impl From<PromptPatternList> for TerminalReply {
+    fn from(payload: PromptPatternList) -> Self {
+        Self::PromptPatternList(payload)
+    }
+}
+impl From<GateAcquired> for TerminalReply {
+    fn from(payload: GateAcquired) -> Self {
+        Self::GateAcquired(payload)
+    }
+}
+impl From<GateBusy> for TerminalReply {
+    fn from(payload: GateBusy) -> Self {
+        Self::GateBusy(payload)
+    }
+}
+impl From<GateReleased> for TerminalReply {
+    fn from(payload: GateReleased) -> Self {
+        Self::GateReleased(payload)
+    }
+}
+impl From<InjectionAck> for TerminalReply {
+    fn from(payload: InjectionAck) -> Self {
+        Self::InjectionAck(payload)
+    }
+}
+impl From<InjectionRejected> for TerminalReply {
+    fn from(payload: InjectionRejected) -> Self {
+        Self::InjectionRejected(payload)
+    }
+}
+impl From<TerminalWorkerLifecycleSnapshot> for TerminalReply {
+    fn from(payload: TerminalWorkerLifecycleSnapshot) -> Self {
+        Self::TerminalWorkerLifecycleSnapshot(payload)
+    }
+}
+
+// And one for the event enum, used by daemon code that constructs
+// events before handing them off to the streaming-event emit path.
+impl From<TerminalWorkerLifecycleEvent> for TerminalEvent {
+    fn from(payload: TerminalWorkerLifecycleEvent) -> Self {
+        Self::TerminalWorkerLifecycleEvent(payload)
+    }
+}
