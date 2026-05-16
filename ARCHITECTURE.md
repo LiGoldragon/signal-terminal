@@ -1,145 +1,140 @@
-# ARCHITECTURE - signal-persona-terminal
+# signal-persona-terminal — architecture
 
-Signal contract for Persona terminal transport control.
+*Signal contract for Persona terminal transport control.*
 
-`persona-terminal` is the transport owner. This crate defines the closed
-control-plane records that other Persona components use to ask the transport
-owner for terminal work. The raw attached-viewer byte plane is intentionally
-outside this contract: PTY bytes, socket bytes, and viewer pump bytes stay in
-`terminal-cell` / `persona-terminal` implementation code and are not wrapped in
-Signal frames.
+## 0 · TL;DR
 
-The control channel is one `signal_channel!` invocation in `src/lib.rs`.
-Terminal-owned introspection records live in `src/introspection.rs`; they are
-record vocabulary, not a second runtime owner.
+`signal-persona-terminal` is the typed control-plane contract
+`persona-harness` (and router delivery adapters) use to ask
+`persona-terminal` for terminal work. The raw attached-viewer byte
+plane stays outside this contract: PTY bytes, socket bytes, and
+viewer-pump bytes live in `terminal-cell` / `persona-terminal`
+implementation code, not in Signal frames.
 
-## Channel
+There is one `signal_channel!` invocation in `src/lib.rs` declaring
+the `Terminal` channel. Terminal-owned introspection records (typed
+projections of durable Sema rows for `persona-introspect`) live in
+`src/introspection.rs`.
+
+Subscription close on the terminal-worker-lifecycle stream follows
+the **Path A** discipline per /181 and
+`~/primary/reports/designer-assistant/91-user-decisions-after-designer-184-200-critique.md`
+§2: a request-side `Retract TerminalWorkerLifecycleRetraction` carries
+the per-stream token; the terminal responds with
+`TerminalReply::SubscriptionRetracted` echoing the token.
+
+## 1 · Channel
 
 | Side | Component |
 |---|---|
-| Request side | Persona components that need terminal transport, currently `persona-harness` and router delivery adapters |
-| Event side | `persona-terminal` |
+| Request side | Persona components that need terminal transport (today: `persona-harness` and router delivery adapters). |
+| Reply / event side | `persona-terminal` |
 
-There are two control surfaces:
+Two control surfaces share the channel:
 
-- Harness transport: `persona-harness` requests connection, input, resize,
-  detachment, and capture vectors. `persona-terminal` emits readiness, input
-  acceptance, transcript, resize, detachment, capture, exit, and rejection
-  events.
-- Terminal control: `persona-terminal` owns prompt-pattern registry, input gate
-  leases, write injection acknowledgements, and worker lifecycle observations.
-  It may implement those facts on top of `terminal-cell` primitives, but
-  `terminal-cell` is not the Persona-facing contract endpoint.
+- **Harness transport**: `persona-harness` requests connection,
+  input, resize, detachment, and capture vectors. `persona-terminal`
+  emits readiness, input acceptance, transcript, resize, detachment,
+  capture, exit, and rejection events.
+- **Terminal control**: `persona-terminal` owns prompt-pattern
+  registry, input-gate leases, write-injection acknowledgements, and
+  worker-lifecycle observations. It may implement those facts on top
+  of `terminal-cell` primitives, but `terminal-cell` is not the
+  Persona-facing contract endpoint.
 
-The steady-state flow is pushed by the transport owner. Harnesses and callers do
-not poll for transcript or lifecycle state.
+The steady-state flow is pushed by the transport owner. Harnesses
+and callers do not poll for transcript or lifecycle state.
 
-## Record Source
+## 2 · Wire vocabulary
 
-Records local to this contract:
+Records local to this contract (see source for the full list):
 
-- `TerminalName`
-- `TerminalGeneration`
-- `TerminalSequence`
-- `TerminalInputBytes`
-- `TerminalTranscriptBytes`
-- `TerminalRows`
-- `TerminalColumns`
-- `TerminalByteCount`
-- `PromptPatternId`
-- `PromptPatternBytes`
-- `PromptPattern`
-- `RegisterPromptPattern`
-- `UnregisterPromptPattern`
-- `ListPromptPatterns`
-- `PromptPatternEntry`
-- `PromptPatternRegistered`
-- `PromptPatternUnregistered`
-- `PromptPatternList`
-- `InputGateReason`
-- `InputGateLeaseId`
-- `InputGateLease`
-- `PromptState`
-- `AcquireInputGate`
-- `ReleaseInputGate`
-- `WriteInjection`
-- `GateAcquired`
-- `GateBusy`
-- `GateReleased`
-- `InjectionAck`
-- `InjectionRejected`
-- `InjectionRejectionReason`
-- `SubscribeTerminalWorkerLifecycle`
-- `TerminalWorkerKind`
-- `TerminalWorkerStopReason`
-- `TerminalWorkerLifecycle`
-- `TerminalWorkerLifecycleSnapshot`
-- `TerminalWorkerLifecycleEvent`
-- `TerminalConnection`
-- `TerminalInput`
-- `TerminalResize`
-- `TerminalDetachment`
-- `TerminalCapture`
-- `TerminalReady`
-- `TerminalInputAccepted`
-- `TranscriptDelta`
-- `TerminalResized`
-- `TerminalCaptured`
-- `TerminalDetached`
-- `TerminalExited`
-- `TerminalRejected`
-- `TerminalObservationSequence`
-- `TerminalSocketPath`
-- `TerminalViewerName`
-- `TerminalArchiveReason`
-- `TerminalSessionState`
-- `TerminalSessionObservation`
-- `TerminalDeliveryAttemptState`
-- `TerminalDeliveryAttemptObservation`
-- `TerminalEventObservation`
-- `TerminalViewerAttachmentState`
-- `TerminalViewerAttachmentObservation`
-- `TerminalSessionHealthObservation`
-- `TerminalSessionArchiveState`
-- `TerminalSessionArchiveObservation`
-- `TerminalIntrospectionSnapshot`
+- Terminal identity: `TerminalName`, `TerminalGeneration`,
+  `TerminalSequence`.
+- Byte and geometry types: `TerminalInputBytes`,
+  `TerminalTranscriptBytes`, `TerminalRows`, `TerminalColumns`,
+  `TerminalByteCount`.
+- Prompt-pattern records: `PromptPatternId`, `PromptPatternBytes`,
+  `PromptPattern`, `RegisterPromptPattern`, `UnregisterPromptPattern`,
+  `ListPromptPatterns`, `PromptPatternEntry`, `PromptPatternRegistered`,
+  `PromptPatternUnregistered`, `PromptPatternList`.
+- Input-gate records: `InputGateReason`, `InputGateLeaseId`,
+  `InputGateLease`, `PromptState`, `AcquireInputGate`,
+  `ReleaseInputGate`, `WriteInjection`, `GateAcquired`, `GateBusy`,
+  `GateReleased`, `InjectionAck`, `InjectionRejected`,
+  `InjectionRejectionReason`.
+- Worker-lifecycle subscription records:
+  `SubscribeTerminalWorkerLifecycle`, `TerminalWorkerLifecycleToken`,
+  `SubscriptionRetracted`, `TerminalWorkerKind`,
+  `TerminalWorkerStopReason`, `TerminalWorkerLifecycle`,
+  `TerminalWorkerLifecycleSnapshot`, `TerminalWorkerLifecycleEvent`.
+- Connection / transport: `TerminalConnection`, `TerminalInput`,
+  `TerminalResize`, `TerminalDetachment`, `TerminalCapture`,
+  `TerminalReady`, `TerminalInputAccepted`, `TranscriptDelta`,
+  `TerminalResized`, `TerminalCaptured`, `TerminalDetached`,
+  `TerminalExited`, `TerminalRejected`.
+- Introspection projections (in `src/introspection.rs`):
+  `TerminalObservationSequence`, `TerminalSocketPath`,
+  `TerminalViewerName`, `TerminalArchiveReason`,
+  `TerminalSessionState`, `TerminalSessionObservation`,
+  `TerminalDeliveryAttemptState`, `TerminalDeliveryAttemptObservation`,
+  `TerminalEventObservation`, `TerminalViewerAttachmentState`,
+  `TerminalViewerAttachmentObservation`,
+  `TerminalSessionHealthObservation`, `TerminalSessionArchiveState`,
+  `TerminalSessionArchiveObservation`, `TerminalIntrospectionSnapshot`.
 
-The records are terminal-transport vocabulary. They are not router, message,
-auth, or terminal raw-data records.
+The records are terminal-transport vocabulary. They are not router,
+message, auth, or terminal raw-data records.
 
-## Messages
+## 3 · Messages
 
 ```text
-TerminalRequest                 TerminalEvent
-├─ TerminalConnection           ├─ TerminalReady
-├─ TerminalInput                ├─ TerminalInputAccepted
-├─ TerminalResize               ├─ TerminalResized
-├─ TerminalDetachment           ├─ TerminalCaptured
-├─ TerminalCapture              ├─ TranscriptDelta
-├─ RegisterPromptPattern        ├─ TerminalDetached
-├─ UnregisterPromptPattern      ├─ TerminalExited
-├─ ListPromptPatterns           ├─ TerminalRejected
-├─ AcquireInputGate             ├─ PromptPatternRegistered
-├─ ReleaseInputGate             ├─ PromptPatternUnregistered
-├─ WriteInjection               ├─ PromptPatternList
-└─ SubscribeTerminalWorker...   ├─ GateAcquired
-                                ├─ GateBusy
-                                ├─ GateReleased
-                                ├─ InjectionAck
-                                ├─ InjectionRejected
-                                ├─ TerminalRequestUnimplemented
-                                ├─ TerminalWorkerLifecycleSnapshot
-                                └─ TerminalWorkerLifecycleEvent
+TerminalRequest                          TerminalReply
+├─ TerminalConnection                    ├─ TerminalReady
+├─ TerminalInput                         ├─ TerminalInputAccepted
+├─ TerminalResize                        ├─ TerminalResized
+├─ TerminalDetachment                    ├─ TerminalCaptured
+├─ TerminalCapture                       ├─ TranscriptDelta
+├─ RegisterPromptPattern                 ├─ TerminalDetached
+├─ UnregisterPromptPattern               ├─ TerminalExited
+├─ ListPromptPatterns                    ├─ TerminalRejected
+├─ AcquireInputGate                      ├─ PromptPatternRegistered
+├─ ReleaseInputGate                      ├─ PromptPatternUnregistered
+├─ WriteInjection                        ├─ PromptPatternList
+├─ SubscribeTerminalWorker...            ├─ GateAcquired
+└─ TerminalWorkerLifecycleRetraction     ├─ GateBusy
+                                         ├─ GateReleased
+                                         ├─ InjectionAck
+                                         ├─ InjectionRejected
+                                         ├─ TerminalRequestUnimplemented
+                                         ├─ TerminalWorkerLifecycleSnapshot
+                                         ├─ TerminalWorkerLifecycleEvent
+                                         └─ SubscriptionRetracted
+
+(TerminalWorkerLifecycleEvent flows on TerminalWorkerLifecycleStream.)
 ```
 
 Closed enums; typed rejection reasons; no string-tagged event kinds.
 
-### Signal root verbs
+### Path A lifecycle on the worker-lifecycle stream
 
-Every `TerminalRequest` variant declares its root verb in the
-`signal_channel!` declaration. `signal-core` generates
-`TerminalRequest::signal_verb()` and
-`TerminalRequest::into_request()` from that declaration.
+```mermaid
+sequenceDiagram
+    participant Caller as caller
+    participant Terminal as persona-terminal
+
+    Caller->>Terminal: SubscribeTerminalWorkerLifecycle(target)
+    Terminal-->>Caller: TerminalWorkerLifecycleSnapshot{...}
+    Terminal-->>Caller: TerminalWorkerLifecycleEvent{...}
+    Caller->>Terminal: TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken)
+    Terminal-->>Caller: SubscriptionRetracted{token}
+```
+
+The request retract variant is required by the `signal_channel!`
+stream-block grammar; the reply ack is the final event consumers
+bind their in-flight subscribe to.
+
+### Signal root verbs
 
 ```text
 TerminalConnection                 -> Assert
@@ -153,13 +148,14 @@ ListPromptPatterns                 -> Match
 AcquireInputGate                   -> Assert
 ReleaseInputGate                   -> Retract
 WriteInjection                     -> Assert
-SubscribeTerminalWorkerLifecycle   -> Subscribe
+SubscribeTerminalWorkerLifecycle   -> Subscribe   (opens TerminalWorkerLifecycleStream)
+TerminalWorkerLifecycleRetraction  -> Retract     (closes TerminalWorkerLifecycleStream)
 ```
 
-Terminal reads use `Match`; terminal worker streams use `Subscribe`.
-Control operations that append new work or create leases use `Assert`.
-State changes to existing terminal geometry use `Mutate`, while detach,
-unregister, and release requests use `Retract`.
+Terminal reads use `Match`; terminal-worker streams use `Subscribe`.
+Control operations that append new work or create leases use
+`Assert`. State changes to existing terminal geometry use `Mutate`;
+detach, unregister, and release requests use `Retract`.
 
 ### Skeleton honesty (Unimplemented event)
 
@@ -175,9 +171,9 @@ TerminalRequestUnimplemented
   | reason:      TerminalUnimplementedReason
 ```
 
-When a `TerminalRequest` variant has no built behavior yet, `persona-terminal`
-emits `TerminalRequestUnimplemented` rather than panicking or producing a
-generic rejection.
+When a `TerminalRequest` variant has no built behavior yet,
+`persona-terminal` emits `TerminalRequestUnimplemented` rather than
+panicking or producing a generic rejection.
 
 ### Injection ordering
 
@@ -187,136 +183,129 @@ gate-lease holder's writes are sequenced. Out-of-order use returns
 
 ```text
 WriteInjection
-  | terminal:          TerminalName
-  | lease:             InputGateLease
+  | terminal:           TerminalName
+  | lease:              InputGateLease
   | injection_sequence: u64
-  | bytes:             TerminalInputBytes
+  | bytes:              TerminalInputBytes
 ```
 
 ### `TerminalName` namespace scope
 
-`TerminalName` identifies a supervised terminal session. For the prototype,
-the canonical scope is "one role per name" — `TerminalName::new("operator")`,
-`TerminalName::new("designer")`, etc. Future cases where multiple harnesses
-share a role get a richer namespace; until then, the name space matches the
-role-name vocabulary in `signal-persona-mind::RoleName`.
+`TerminalName` identifies a supervised terminal session. For the
+prototype, the canonical scope is "one role per name" —
+`TerminalName::new("operator")`, `TerminalName::new("designer")`,
+etc. Future cases where multiple harnesses share a role get a
+richer namespace; until then, the name space matches the role-name
+vocabulary in `signal-persona-mind::RoleName`.
 
-## Terminal-Cell Control
+## 4 · Terminal-Cell Control
 
-Prompt pattern records let a caller register the terminal-ready shape that makes
-write injection safe to attempt. Input gate records make the exclusive write
-lease explicit and include prompt state in the acquisition reply. Write
-injection records acknowledge the terminal generation and sequence produced by a
-successful write. Worker lifecycle records expose transport task start/stop
+Prompt-pattern records let a caller register the terminal-ready
+shape that makes write injection safe to attempt. Input-gate records
+make the exclusive write lease explicit and include prompt state in
+the acquisition reply. Write-injection records acknowledge the
+terminal generation and sequence produced by a successful write.
+Worker-lifecycle records expose transport task start/stop
 observations as typed events.
 
-This contract does not decide whether a write should happen. It only carries the
-transport control facts needed by `persona-terminal` and its consumers.
+This contract does not decide whether a write should happen. It only
+carries the transport control facts needed by `persona-terminal` and
+its consumers.
 
-## Introspection Records
+## 5 · Introspection records
 
 Terminal durable Sema rows that need to be inspectable outside
-`persona-terminal` have typed record shapes in this contract. The component
-still owns its redb file, table declarations, reducers, consistency model, and
-redaction policy. `persona-introspect` asks the running component for these
-records; it does not open `persona-terminal`'s database directly.
+`persona-terminal` have typed record shapes in this contract. The
+component still owns its redb file, table declarations, reducers,
+consistency model, and redaction policy. `persona-introspect` asks
+the running component for these records; it does not open
+`persona-terminal`'s database directly.
 
-`TerminalIntrospectionSnapshot` is the prototype projection bundle over:
+`TerminalIntrospectionSnapshot` is the prototype projection bundle
+over: terminal session observations; delivery attempt observations;
+terminal event observations; viewer attachment observations; session
+health observations; session archive observations.
 
-- terminal session observations;
-- delivery attempt observations;
-- terminal event observations;
-- viewer attachment observations;
-- session health observations;
-- session archive observations.
+These records are not router, harness, message, or terminal-cell
+records. They name terminal-owned inspectable state at the Persona
+terminal boundary.
 
-These records are not router, harness, message, or terminal-cell records. They
-name terminal-owned inspectable state at the Persona terminal boundary.
+## 6 · Constraints
 
-## Versioning
+| Constraint | Witness |
+|---|---|
+| Every request/reply travels as a Signal frame. | `tests/round_trip.rs` length-prefixed frame tests per variant. |
+| Every `TerminalRequest` variant declares a Signal root verb. | `signal-core` generates `TerminalRequest::signal_verb()`; round-trip tests assert each variant's expected root. |
+| Subscription close uses **Path A**: request-side `Retract TerminalWorkerLifecycleRetraction` carrying the token, plus reply-side `SubscriptionRetracted` ack echoing the token. | The `signal_channel!` declaration names `Retract TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken)` and a `stream TerminalWorkerLifecycleStream { close TerminalWorkerLifecycleRetraction; … }` block. The kernel grammar (`signal-core::macros::validate`) rejects a `stream` block whose `close` is not a request-side `Retract` variant. Wire witnesses cover the retract request and the reply ack. |
+| Wire enums contain no `Unknown` variant. | Source scan: only `InjectionRejectionReason::{UnknownTerminal,UnknownLease}` carry the word "Unknown" and those are positive domain rejections (see next row). |
+| Any record name containing the word `Unknown` represents a positive "entity not in our state" rejection, not a polling-shape escape hatch. | `InjectionRejectionReason::UnknownTerminal` and `UnknownLease` name "the terminal/lease id you sent isn't in our state" — closed, positively-defined failure modes, not lifecycle uncertainty placeholders. |
+| Skeleton honesty uses typed reasons, not free text. | `TerminalRequestUnimplemented.operation` is the closed `TerminalOperationKind`; `reason` is the closed `TerminalUnimplementedReason`. |
+| Injection ordering is enforced by sequence number, not retry. | `WriteInjection.injection_sequence`; out-of-order use returns `InjectionRejectionReason::InvalidSequence`. |
+| Every `signal_channel!` request variant has a typed `signal_verb()` mapping. | Generated by the macro; round-trip witness asserts each variant. |
+| Round-trip witnesses cover every variant in rkyv. | `tests/round_trip.rs` covers every request, reply, and event variant. |
+| Round-trip witnesses cover every variant in NOTA. | `examples/canonical.nota` holds one canonical text example per request/reply/event variant; round-trip tests parse and re-emit each. |
+| No stringly-typed dispatch (`match s.as_str()`) for closed-set states. | All kind / reason / state fields are typed closed enums. |
+| Contract crate dependencies use a named API reference (branch or tag), not a raw revision pin. | `Cargo.toml` review: `signal-core` is declared `git = "..."` with a named-branch shape; raw `rev = "..."` pins are not used. |
+| Runtime code stays out of the contract. | Source scan: no Kameo, Tokio, socket, or redb code. |
 
-`signal_core::Frame` carries the protocol version. Schema-level changes are
-breaking; coordinate `persona-harness` and terminal transport upgrades.
+## 7 · NOTA codec quirk on `signal_channel!` payload heads
 
-## Examples
+The `signal_channel!` macro emits a request variant's NOTA head as
+the **payload's record head**, not the Rust variant name. For
+example, `TerminalRequest::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken { .. })`
+encodes as `(TerminalWorkerLifecycleToken (...))`, not
+`(TerminalWorkerLifecycleRetraction ...)`. Canonical examples and
+round-trip tests carry the payload heads.
 
-```text
-;; harness -> terminal: connect a named terminal session
-TerminalRequest::TerminalConnection(TerminalConnection {
-    terminal: TerminalName::new("operator"),
-})
+## 8 · Versioning
 
-;; harness -> terminal: write bytes to the session PTY
-TerminalRequest::TerminalInput(TerminalInput {
-    terminal: TerminalName::new("operator"),
-    bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
-})
+`signal_core::Frame` carries the protocol version. Schema-level
+changes are breaking; coordinate `persona-harness`,
+`persona-terminal`, and terminal-cell transport on the upgrade.
 
-;; terminal -> harness: initial current-state event
-TerminalEvent::TerminalReady(TerminalReady {
-    terminal: TerminalName::new("operator"),
-    generation: TerminalGeneration::new(1),
-})
+This crate depends on `signal-core` via a named-branch reference, not
+a raw revision pin. The destination is a stable `signal-core` API
+branch/bookmark once that lane is declared.
 
-;; terminal -> harness: pushed output bytes
-TerminalEvent::TranscriptDelta(TranscriptDelta {
-    terminal: TerminalName::new("operator"),
-    sequence: TerminalSequence::new(7),
-    bytes: TerminalTranscriptBytes::new(b"hello\r\n".to_vec()),
-})
-
-;; caller -> terminal: acquire exclusive write access after prompt check
-TerminalRequest::AcquireInputGate(AcquireInputGate {
-    terminal: TerminalName::new("operator"),
-    reason: InputGateReason::new("send router-delivered command"),
-    prompt_pattern_id: Some(PromptPatternId::new("shell-ready")),
-})
-
-;; terminal -> caller: gate acquired and prompt was clean
-TerminalEvent::GateAcquired(GateAcquired {
-    terminal: TerminalName::new("operator"),
-    lease: InputGateLease::new(42),
-    prompt_state: PromptState::Clean,
-})
-```
-
-## Round Trips
-
-Round-trip tests in `tests/round_trip.rs` cover every request variant, every
-event variant, typed rejection reasons, and representative `From` impl
-witnesses. Representative NOTA text witnesses cover prompt pattern
-registration, input gate acquisition, gate acquisition events, and worker
-lifecycle snapshots. Manual codec enums are exercised through those witnesses
-plus per-variant frame round trips.
-Request frame tests assert each variant's `signal_verb()` mapping.
-
-## Non-ownership
+## 9 · Non-ownership
 
 - No terminal daemon. That is `persona-terminal`.
 - No harness actor. That is `persona-harness`.
 - No router delivery policy. That is `persona-router`.
 - No OS focus policy. That is `persona-system`.
-- No terminal-cell daemon. That is `terminal-cell`, behind `persona-terminal`.
-- No prompt interpretation or delivery policy. That belongs in the caller and
-  transport owner, not this contract.
-- No raw PTY/viewer byte data plane.
+- No terminal-cell daemon. That is `terminal-cell`, behind
+  `persona-terminal`.
+- No prompt interpretation or delivery policy. That belongs in the
+  caller and transport owner, not this contract.
+- No raw PTY / viewer byte data plane.
 - No transport loop, reconnect policy, or socket path.
 
-## Code Map
+## 10 · Code map
 
 ```text
 src/
-├── lib.rs           - control payloads + signal_channel! invocation
-└── introspection.rs - terminal-owned inspectable-state record shapes
+├── lib.rs                — control payloads + signal_channel! invocation
+└── introspection.rs      — terminal-owned inspectable-state record shapes
+examples/
+└── canonical.nota         — one canonical example per request/reply/event variant
 tests/
-├── round_trip.rs    - per-variant frame round trips + NOTA text witnesses
-└── introspection.rs - rkyv + NOTA witnesses for inspection records
+├── round_trip.rs          — per-variant frame round trips + NOTA witnesses
+│                            + closed-enum + verb-mapping witnesses
+│                            + canonical examples parser
+│                            + full subscribe/event/retract/ack lifecycle witness
+└── introspection.rs       — rkyv + NOTA witnesses for inspection records
 ```
 
-## See Also
+## See also
 
+- `signal-core/src/channel.rs` — the macro and stream-block grammar
+  that enforces the request-side retract variant.
+- `signal-persona-harness/ARCHITECTURE.md` — sibling contract using
+  the same Path A subscription discipline.
+- `signal-persona-system/ARCHITECTURE.md` and
+  `signal-criome/ARCHITECTURE.md` — sibling contracts using the same
+  Path A subscription discipline.
 - `persona-harness/ARCHITECTURE.md`
 - `persona-terminal/ARCHITECTURE.md`
 - `persona-router/ARCHITECTURE.md`
 - `terminal-cell/ARCHITECTURE.md`
-- `signal-core/src/channel.rs`
