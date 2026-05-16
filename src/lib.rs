@@ -517,6 +517,7 @@ pub enum TerminalWorkerStopReason {
     InputCommandChannelClosed,
     InputWriteFailed(String),
     OutputCommandChannelClosed,
+    TranscriptNoticeChannelClosed,
     OutputReaderFinished,
     OutputReadFailed(String),
     OutputPortClosed,
@@ -541,6 +542,10 @@ impl NotaEncode for TerminalWorkerStopReason {
             }
             Self::OutputCommandChannelClosed => {
                 encoder.start_record("OutputCommandChannelClosed")?;
+                encoder.end_record()
+            }
+            Self::TranscriptNoticeChannelClosed => {
+                encoder.start_record("TranscriptNoticeChannelClosed")?;
                 encoder.end_record()
             }
             Self::OutputReaderFinished => {
@@ -603,6 +608,11 @@ impl NotaDecode for TerminalWorkerStopReason {
                 decoder.expect_record_head("OutputCommandChannelClosed")?;
                 decoder.expect_record_end()?;
                 Ok(Self::OutputCommandChannelClosed)
+            }
+            "TranscriptNoticeChannelClosed" => {
+                decoder.expect_record_head("TranscriptNoticeChannelClosed")?;
+                decoder.expect_record_end()?;
+                Ok(Self::TranscriptNoticeChannelClosed)
             }
             "OutputReaderFinished" => {
                 decoder.expect_record_head("OutputReaderFinished")?;
