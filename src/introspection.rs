@@ -38,9 +38,28 @@ impl TerminalObservationSequence {
 #[derive(
     Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
 )]
-pub struct TerminalSocketPath(String);
+pub struct TerminalControlSocketPath(String);
 
-impl TerminalSocketPath {
+impl TerminalControlSocketPath {
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+
+    pub fn into_string(self) -> String {
+        self.0
+    }
+}
+
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
+)]
+pub struct TerminalDataSocketPath(String);
+
+impl TerminalDataSocketPath {
     pub fn new(value: impl Into<String>) -> Self {
         Self(value.into())
     }
@@ -102,17 +121,23 @@ impl TerminalSessionState {
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionObservation {
     pub terminal: TerminalName,
-    pub socket_path: TerminalSocketPath,
+    pub control_socket_path: TerminalControlSocketPath,
+    pub data_socket_path: TerminalDataSocketPath,
     pub generation: TerminalGeneration,
     pub transcript_sequence: TerminalSequence,
     pub state: TerminalSessionState,
 }
 
 impl TerminalSessionObservation {
-    pub fn ready(terminal: TerminalName, socket_path: impl Into<String>) -> Self {
+    pub fn ready(
+        terminal: TerminalName,
+        control_socket_path: impl Into<String>,
+        data_socket_path: impl Into<String>,
+    ) -> Self {
         Self {
             terminal,
-            socket_path: TerminalSocketPath::new(socket_path),
+            control_socket_path: TerminalControlSocketPath::new(control_socket_path),
+            data_socket_path: TerminalDataSocketPath::new(data_socket_path),
             generation: TerminalGeneration::new(1),
             transcript_sequence: TerminalSequence::new(0),
             state: TerminalSessionState::Ready,
@@ -123,8 +148,12 @@ impl TerminalSessionObservation {
         &self.terminal
     }
 
-    pub fn socket_path(&self) -> &TerminalSocketPath {
-        &self.socket_path
+    pub fn control_socket_path(&self) -> &TerminalControlSocketPath {
+        &self.control_socket_path
+    }
+
+    pub fn data_socket_path(&self) -> &TerminalDataSocketPath {
+        &self.data_socket_path
     }
 
     pub const fn generation(&self) -> TerminalGeneration {

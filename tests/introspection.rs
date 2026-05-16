@@ -50,15 +50,51 @@ where
 
 #[test]
 fn terminal_session_observation_is_contract_owned_introspection_record() {
-    let observation =
-        TerminalSessionObservation::ready(terminal(), "/run/persona/engine/terminal.sock");
+    let observation = TerminalSessionObservation::ready(
+        terminal(),
+        "/run/persona/engine/terminal.control.sock",
+        "/run/persona/engine/terminal.data.sock",
+    );
 
     assert_eq!(round_trip_archive(observation.clone()), observation);
     assert_eq!(
-        observation.socket_path().as_str(),
-        "/run/persona/engine/terminal.sock"
+        observation.control_socket_path().as_str(),
+        "/run/persona/engine/terminal.control.sock"
+    );
+    assert_eq!(
+        observation.data_socket_path().as_str(),
+        "/run/persona/engine/terminal.data.sock"
     );
     assert_eq!(observation.state(), TerminalSessionState::Ready);
+}
+
+#[test]
+fn terminal_session_observation_typed_control_and_data_paths_round_trip_via_nota_text() {
+    let observation = TerminalSessionObservation::ready(
+        terminal(),
+        "/tmp/terminal/operator/control.sock",
+        "/tmp/terminal/operator/data.sock",
+    );
+
+    let mut encoder = Encoder::new();
+    observation.encode(&mut encoder).expect("encode nota");
+    let encoded = encoder.into_string();
+    assert_eq!(
+        encoded,
+        "(TerminalSessionObservation operator \"/tmp/terminal/operator/control.sock\" \"/tmp/terminal/operator/data.sock\" 1 0 Ready)"
+    );
+
+    let mut decoder = Decoder::new(&encoded);
+    let recovered = TerminalSessionObservation::decode(&mut decoder).expect("decode nota");
+    assert_eq!(recovered, observation);
+    assert_eq!(
+        recovered.control_socket_path().as_str(),
+        "/tmp/terminal/operator/control.sock"
+    );
+    assert_eq!(
+        recovered.data_socket_path().as_str(),
+        "/tmp/terminal/operator/data.sock"
+    );
 }
 
 #[test]
@@ -127,7 +163,8 @@ fn terminal_introspection_snapshot_round_trips_through_nota_text() {
         TerminalIntrospectionSnapshot {
             sessions: vec![TerminalSessionObservation::ready(
                 terminal(),
-                "/run/persona/engine/terminal.sock",
+                "/run/persona/engine/terminal.control.sock",
+                "/run/persona/engine/terminal.data.sock",
             )],
             delivery_attempts: vec![TerminalDeliveryAttemptObservation::started(
                 TerminalObservationSequence::new(7),
@@ -146,6 +183,6 @@ fn terminal_introspection_snapshot_round_trips_through_nota_text() {
                 "session rotated",
             )],
         },
-        "(TerminalIntrospectionSnapshot [(TerminalSessionObservation operator \"/run/persona/engine/terminal.sock\" 1 0 Ready)] [(TerminalDeliveryAttemptObservation 7 operator WriteInjection Started)] [] [] [(TerminalSessionHealthObservation operator Ready 2)] [(TerminalSessionArchiveObservation operator \"session rotated\" Archived)])",
+        "(TerminalIntrospectionSnapshot [(TerminalSessionObservation operator \"/run/persona/engine/terminal.control.sock\" \"/run/persona/engine/terminal.data.sock\" 1 0 Ready)] [(TerminalDeliveryAttemptObservation 7 operator WriteInjection Started)] [] [] [(TerminalSessionHealthObservation operator Ready 2)] [(TerminalSessionArchiveObservation operator \"session rotated\" Archived)])",
     );
 }
