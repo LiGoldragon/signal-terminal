@@ -131,6 +131,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "nota-config"
+version = "0.1.0"
+source = "git+https://github.com/LiGoldragon/nota-config.git?branch=main#d557fbf1dea78e417aa26a3b2858e810a6b6f292"
+dependencies = [
+ "nota-codec",
+ "rkyv",
+ "thiserror",
+]
+
+[[package]]
 name = "nota-derive"
 version = "0.1.0"
 source = "git+https://github.com/LiGoldragon/nota-derive.git?branch=main#e24e50afe110810db50a7eb8f9a7963c6761c0af"
@@ -266,12 +276,36 @@ dependencies = [
 ]
 
 [[package]]
-name = "signal-persona-terminal"
+name = "signal-persona"
 version = "0.1.0"
+source = "git+https://github.com/LiGoldragon/signal-persona.git#49cf02c4eea44d565d128709fe1d7dccf041cd45"
 dependencies = [
  "nota-codec",
  "rkyv",
  "signal-core",
+ "signal-persona-auth",
+]
+
+[[package]]
+name = "signal-persona-auth"
+version = "0.1.0"
+source = "git+https://github.com/LiGoldragon/signal-persona-auth.git#e4ea81ea6cef9d5b1627eaa051f14b44ae5a095f"
+dependencies = [
+ "nota-codec",
+ "rkyv",
+ "signal-core",
+]
+
+[[package]]
+name = "signal-persona-terminal"
+version = "0.1.0"
+dependencies = [
+ "nota-codec",
+ "nota-config",
+ "rkyv",
+ "signal-core",
+ "signal-persona",
+ "signal-persona-auth",
  "thiserror",
 ]
 

@@ -747,3 +747,49 @@ fn terminal_contract_names_persona_terminal_as_the_production_endpoint() {
     assert!(!source.contains("terminal-cell's control plane"));
     assert!(!source.contains("terminal-cell integration callers"));
 }
+
+#[test]
+fn terminal_daemon_configuration_round_trips_through_nota_text() {
+    use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
+    use signal_persona::{SocketMode, WirePath};
+    use signal_persona_auth::{OwnerIdentity, UnixUserId};
+    use signal_persona_terminal::TerminalDaemonConfiguration;
+
+    let configuration = TerminalDaemonConfiguration {
+        terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock"),
+        terminal_socket_mode: SocketMode::new(0o600),
+        supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
+        supervision_socket_mode: SocketMode::new(0o600),
+        store_path: WirePath::new("/var/lib/persona/X/terminal.redb"),
+        owner_identity: OwnerIdentity::UnixUser(UnixUserId::new(1000)),
+    };
+
+    let mut encoder = Encoder::new();
+    configuration.encode(&mut encoder).expect("encode configuration");
+    let text = encoder.into_string();
+    let mut decoder = Decoder::new(&text);
+    let recovered = TerminalDaemonConfiguration::decode(&mut decoder).expect("decode configuration");
+
+    assert_eq!(recovered, configuration);
+}
+
+#[test]
+fn terminal_daemon_configuration_round_trips_through_rkyv() {
+    use nota_config::ConfigurationRecord;
+    use signal_persona::{SocketMode, WirePath};
+    use signal_persona_auth::{OwnerIdentity, UnixUserId};
+    use signal_persona_terminal::TerminalDaemonConfiguration;
+
+    let configuration = TerminalDaemonConfiguration {
+        terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock"),
+        terminal_socket_mode: SocketMode::new(0o600),
+        supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
+        supervision_socket_mode: SocketMode::new(0o600),
+        store_path: WirePath::new("/var/lib/persona/X/terminal.redb"),
+        owner_identity: OwnerIdentity::UnixUser(UnixUserId::new(1000)),
+    };
+
+    let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&configuration).expect("archive");
+    let recovered = TerminalDaemonConfiguration::from_rkyv_bytes(&bytes).expect("decode rkyv");
+    assert_eq!(recovered, configuration);
+}

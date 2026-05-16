@@ -1147,3 +1147,38 @@ impl From<TerminalWorkerLifecycleToken> for TerminalRequest {
         Self::TerminalWorkerLifecycleRetraction(p)
     }
 }
+
+// ─── Daemon configuration ──────────────────────────────────
+//
+// Typed startup configuration for `persona-terminal-supervisor`.
+// The persona manager writes one of these (NOTA or rkyv) to a
+// state-dir path and passes that path as argv. The supervisor
+// decodes through `nota_config::ConfigurationSource::from_argv()?
+// .decode()?` and runs with the resulting record. No environment
+// variables on the production launch path.
+
+/// Startup configuration for `persona-terminal-supervisor`.
+///
+/// Replaces the previous `--socket`, `--store`,
+/// `PERSONA_SOCKET_PATH`, `PERSONA_TERMINAL_STORE`,
+/// `PERSONA_STATE_PATH`, `PERSONA_SOCKET_MODE`,
+/// `PERSONA_SUPERVISION_SOCKET_PATH`, and
+/// `PERSONA_SUPERVISION_SOCKET_MODE` argv/environment-variable
+/// surface.
+#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+pub struct TerminalDaemonConfiguration {
+    /// Where the supervisor binds its terminal Unix socket.
+    pub terminal_socket_path: signal_persona::WirePath,
+    /// chmod applied to the terminal socket after bind.
+    pub terminal_socket_mode: signal_persona::SocketMode,
+    /// Where the supervisor binds its supervision Unix socket.
+    pub supervision_socket_path: signal_persona::WirePath,
+    /// chmod applied to the supervision socket after bind.
+    pub supervision_socket_mode: signal_persona::SocketMode,
+    /// Path to the terminal supervisor's redb store file.
+    pub store_path: signal_persona::WirePath,
+    /// The engine owner identity passed to the terminal supervisor.
+    pub owner_identity: signal_persona_auth::OwnerIdentity,
+}
+
+nota_config::impl_rkyv_configuration!(TerminalDaemonConfiguration);
