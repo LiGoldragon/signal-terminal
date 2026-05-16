@@ -504,7 +504,8 @@ pub enum TerminalOperationKind {
 )]
 pub enum TerminalWorkerKind {
     InputWriter,
-    OutputFanout,
+    ViewerFanout,
+    TranscriptScriber,
     OutputReader,
     ChildExitWatcher,
     SocketAcceptLoop,
