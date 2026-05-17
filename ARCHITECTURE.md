@@ -4,12 +4,14 @@
 
 ## 0 · TL;DR
 
-`signal-persona-terminal` is the typed control-plane contract
+`signal-persona-terminal` is the typed communication contract
 `persona-harness` (and router delivery adapters) use to ask
 `persona-terminal` for terminal work. The raw attached-viewer byte
 plane stays outside this contract: PTY bytes, socket bytes, and
 viewer-pump bytes live in `terminal-cell` / `persona-terminal`
-implementation code, not in Signal frames.
+implementation code, not in Signal frames. Engine lifecycle/readiness
+traffic is the separate `signal-persona::SupervisionRequest` relation;
+do not call the component communication socket a supervision socket.
 
 There is one `signal_channel!` invocation in `src/lib.rs` declaring
 the `Terminal` channel. Terminal-owned introspection records (typed
@@ -73,6 +75,13 @@ Records local to this contract (see source for the full list):
   `TerminalReady`, `TerminalInputAccepted`, `TranscriptDelta`,
   `TerminalResized`, `TerminalCaptured`, `TerminalDetached`,
   `TerminalExited`, `TerminalRejected`.
+- Session registry: `TerminalCommandExecutable`,
+  `TerminalCommandArgument`, `TerminalCommand`,
+  `TerminalEnvironmentName`, `TerminalEnvironmentValue`,
+  `TerminalEnvironmentBinding`, `TerminalWorkingDirectory`,
+  `CreateSession`, `RetireSession`, `ListSessions`,
+  `ResolveSession`, `SessionCreated`, `SessionRetired`,
+  `SessionEntry`, `SessionList`, `SessionResolved`.
 - Introspection projections (in `src/introspection.rs`):
   `TerminalObservationSequence`, `TerminalSocketPath`,
   `TerminalViewerName`, `TerminalArchiveReason`,
@@ -95,6 +104,10 @@ TerminalRequest                          TerminalReply
 ├─ TerminalResize                        ├─ TerminalResized
 ├─ TerminalDetachment                    ├─ TerminalCaptured
 ├─ TerminalCapture                       ├─ TranscriptDelta
+├─ CreateSession                         ├─ SessionCreated
+├─ RetireSession                         ├─ SessionRetired
+├─ ListSessions                          ├─ SessionList
+├─ ResolveSession                        ├─ SessionResolved
 ├─ RegisterPromptPattern                 ├─ TerminalDetached
 ├─ UnregisterPromptPattern               ├─ TerminalExited
 ├─ ListPromptPatterns                    ├─ TerminalRejected
@@ -142,6 +155,10 @@ TerminalInput                      -> Assert
 TerminalResize                     -> Mutate
 TerminalDetachment                 -> Retract
 TerminalCapture                    -> Match
+CreateSession                      -> Mutate
+RetireSession                      -> Retract
+ListSessions                       -> Match
+ResolveSession                     -> Match
 RegisterPromptPattern              -> Assert
 UnregisterPromptPattern            -> Retract
 ListPromptPatterns                 -> Match
@@ -156,6 +173,9 @@ Terminal reads use `Match`; terminal-worker streams use `Subscribe`.
 Control operations that append new work or create leases use
 `Assert`. State changes to existing terminal geometry use `Mutate`;
 detach, unregister, and release requests use `Retract`.
+`CreateSession` is also `Mutate`: it is an authority order to install
+a named session in the terminal daemon registry. It is not an
+agent-authored fact about a session that already exists.
 
 ### Skeleton honesty (Unimplemented event)
 
@@ -236,6 +256,8 @@ terminal boundary.
 |---|---|
 | Every request/reply travels as a Signal frame. | `tests/round_trip.rs` length-prefixed frame tests per variant. |
 | Every `TerminalRequest` variant declares a Signal root verb. | `signal-core` generates `TerminalRequest::signal_verb()`; round-trip tests assert each variant's expected root. |
+| Session creation is an authority mutation, not a fact assertion. | `CreateSession` is declared `Mutate`; `tests/round_trip.rs` asserts `SignalVerb::Mutate`. |
+| Session lookup is a read, not an implicit spawn. | `ListSessions` and `ResolveSession` are declared `Match`; they return typed session rows or typed rejection from the daemon. |
 | Subscription close uses **Path A**: request-side `Retract TerminalWorkerLifecycleRetraction` carrying the token, plus reply-side `SubscriptionRetracted` ack echoing the token. | The `signal_channel!` declaration names `Retract TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken)` and a `stream TerminalWorkerLifecycleStream { close TerminalWorkerLifecycleRetraction; … }` block. The kernel grammar (`signal-core::macros::validate`) rejects a `stream` block whose `close` is not a request-side `Retract` variant. Wire witnesses cover the retract request and the reply ack. |
 | Wire enums contain no `Unknown` variant. | Source scan: only `InjectionRejectionReason::{UnknownTerminal,UnknownLease}` carry the word "Unknown" and those are positive domain rejections (see next row). |
 | Any record name containing the word `Unknown` represents a positive "entity not in our state" rejection, not a polling-shape escape hatch. | `InjectionRejectionReason::UnknownTerminal` and `UnknownLease` name "the terminal/lease id you sent isn't in our state" — closed, positively-defined failure modes, not lifecycle uncertainty placeholders. |

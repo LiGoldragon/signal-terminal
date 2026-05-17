@@ -8,13 +8,14 @@
 
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
 use signal_persona_terminal::{
-    AcquireInputGate, GateAcquired, GateBusy, InjectionAck, InjectionRejected,
+    AcquireInputGate, CreateSession, GateAcquired, GateBusy, InjectionAck, InjectionRejected,
     InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason, PromptState,
-    ReleaseInputGate, SubscribeTerminalWorkerLifecycle, SubscriptionRetracted, TerminalCapture,
-    TerminalColumns, TerminalConnection, TerminalDetachment, TerminalDetachmentReason,
-    TerminalGeneration, TerminalInput, TerminalInputAccepted, TerminalInputBytes, TerminalName,
-    TerminalReady, TerminalReply, TerminalRequest, TerminalResize, TerminalRows, TerminalSequence,
-    TerminalWorkerLifecycleToken, WriteInjection,
+    ReleaseInputGate, ResolveSession, RetireSession, SessionCreated, SessionResolved,
+    SubscribeTerminalWorkerLifecycle, SubscriptionRetracted, TerminalCapture, TerminalColumns,
+    TerminalCommand, TerminalCommandExecutable, TerminalConnection, TerminalDetachment,
+    TerminalDetachmentReason, TerminalGeneration, TerminalInput, TerminalInputAccepted,
+    TerminalInputBytes, TerminalName, TerminalReady, TerminalReply, TerminalRequest,
+    TerminalResize, TerminalRows, TerminalSequence, TerminalWorkerLifecycleToken, WriteInjection,
 };
 
 const CANONICAL: &str = include_str!("../examples/canonical.nota");
@@ -37,6 +38,17 @@ fn lease() -> InputGateLease {
 
 fn hello_bytes() -> TerminalInputBytes {
     TerminalInputBytes::new(b"hello".to_vec())
+}
+
+fn command() -> TerminalCommand {
+    TerminalCommand {
+        executable: TerminalCommandExecutable::new("pi"),
+        arguments: Vec::new(),
+    }
+}
+
+fn data_socket_path() -> signal_persona::WirePath {
+    signal_persona::WirePath::new("/run/persona/terminal/sessions/operator/data.sock")
 }
 
 fn round_trip<T>(value: T, canonical_text: &str)
@@ -93,6 +105,23 @@ fn canonical_request_examples_round_trip() {
             terminal: operator(),
         }),
         "(TerminalCapture operator)",
+    );
+    round_trip(
+        TerminalRequest::CreateSession(CreateSession {
+            name: operator(),
+            command: command(),
+            environment: Vec::new(),
+            working_directory: None,
+        }),
+        "(CreateSession operator (TerminalCommand pi []) [] None)",
+    );
+    round_trip(
+        TerminalRequest::RetireSession(RetireSession { name: operator() }),
+        "(RetireSession operator)",
+    );
+    round_trip(
+        TerminalRequest::ResolveSession(ResolveSession { name: operator() }),
+        "(ResolveSession operator)",
     );
     round_trip(
         TerminalRequest::AcquireInputGate(AcquireInputGate {
@@ -178,5 +207,19 @@ fn canonical_reply_examples_round_trip() {
     round_trip(
         TerminalReply::SubscriptionRetracted(SubscriptionRetracted { token: token() }),
         "(SubscriptionRetracted (TerminalWorkerLifecycleToken operator))",
+    );
+    round_trip(
+        TerminalReply::SessionCreated(SessionCreated {
+            name: operator(),
+            data_socket_path: data_socket_path(),
+        }),
+        "(SessionCreated operator \"/run/persona/terminal/sessions/operator/data.sock\")",
+    );
+    round_trip(
+        TerminalReply::SessionResolved(SessionResolved {
+            name: operator(),
+            data_socket_path: data_socket_path(),
+        }),
+        "(SessionResolved operator \"/run/persona/terminal/sessions/operator/data.sock\")",
     );
 }

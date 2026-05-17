@@ -4,25 +4,53 @@ use signal_core::{
     SignalVerb, StreamEventIdentifier, SubReply, SubscriptionTokenInner,
 };
 use signal_persona_terminal::{
-    AcquireInputGate, GateAcquired, GateBusy, GateReleased, InjectionAck, InjectionRejected,
-    InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason,
-    ListPromptPatterns, PromptPattern, PromptPatternBytes, PromptPatternEntry, PromptPatternId,
-    PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered, PromptState,
-    RegisterPromptPattern, ReleaseInputGate, SubscribeTerminalWorkerLifecycle,
-    SubscriptionRetracted, TerminalByteCount, TerminalCapture, TerminalCaptured, TerminalColumns,
-    TerminalConnection, TerminalDetached, TerminalDetachment, TerminalDetachmentReason,
-    TerminalEvent, TerminalExitStatus, TerminalExited, TerminalFrame as Frame,
-    TerminalFrameBody as FrameBody, TerminalGeneration, TerminalInput, TerminalInputAccepted,
-    TerminalInputBytes, TerminalName, TerminalOperationKind, TerminalReady, TerminalRejected,
-    TerminalRejectionReason, TerminalReply, TerminalRequest, TerminalResize, TerminalResized,
-    TerminalRows, TerminalSequence, TerminalTranscriptBytes, TerminalWorkerKind,
+    AcquireInputGate, CreateSession, GateAcquired, GateBusy, GateReleased, InjectionAck,
+    InjectionRejected, InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason,
+    ListPromptPatterns, ListSessions, PromptPattern, PromptPatternBytes, PromptPatternEntry,
+    PromptPatternId, PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered,
+    PromptState, RegisterPromptPattern, ReleaseInputGate, ResolveSession, RetireSession,
+    SessionCreated, SessionEntry, SessionList, SessionResolved, SessionRetired,
+    SubscribeTerminalWorkerLifecycle, SubscriptionRetracted, TerminalByteCount, TerminalCapture,
+    TerminalCaptured, TerminalColumns, TerminalCommand, TerminalCommandArgument,
+    TerminalCommandExecutable, TerminalConnection, TerminalDetached, TerminalDetachment,
+    TerminalDetachmentReason, TerminalEnvironmentBinding, TerminalEnvironmentName,
+    TerminalEnvironmentValue, TerminalEvent, TerminalExitStatus, TerminalExited,
+    TerminalFrame as Frame, TerminalFrameBody as FrameBody, TerminalGeneration, TerminalInput,
+    TerminalInputAccepted, TerminalInputBytes, TerminalName, TerminalOperationKind, TerminalReady,
+    TerminalRejected, TerminalRejectionReason, TerminalReply, TerminalRequest, TerminalResize,
+    TerminalResized, TerminalRows, TerminalSequence, TerminalTranscriptBytes, TerminalWorkerKind,
     TerminalWorkerLifecycle, TerminalWorkerLifecycleEvent, TerminalWorkerLifecycleSnapshot,
-    TerminalWorkerLifecycleToken, TerminalWorkerStopReason, TranscriptDelta,
-    UnregisterPromptPattern, WriteInjection,
+    TerminalWorkerLifecycleToken, TerminalWorkerStopReason, TerminalWorkingDirectory,
+    TranscriptDelta, UnregisterPromptPattern, WriteInjection,
 };
 
 fn terminal() -> TerminalName {
     TerminalName::new("operator")
+}
+
+fn second_terminal() -> TerminalName {
+    TerminalName::new("designer")
+}
+
+fn terminal_command() -> TerminalCommand {
+    TerminalCommand {
+        executable: TerminalCommandExecutable::new("pi"),
+        arguments: vec![
+            TerminalCommandArgument::new("--model"),
+            TerminalCommandArgument::new("qwen"),
+        ],
+    }
+}
+
+fn terminal_environment() -> TerminalEnvironmentBinding {
+    TerminalEnvironmentBinding {
+        name: TerminalEnvironmentName::new("TERM"),
+        value: TerminalEnvironmentValue::new("xterm-256color"),
+    }
+}
+
+fn data_socket_path(name: &str) -> signal_persona::WirePath {
+    signal_persona::WirePath::new(format!("/run/persona/terminal/sessions/{name}/data.sock"))
 }
 
 fn prompt_pattern_id() -> PromptPatternId {
@@ -263,6 +291,42 @@ fn injection_and_worker_requests_round_trip() {
 }
 
 #[test]
+fn session_management_requests_round_trip() {
+    let create = TerminalRequest::CreateSession(CreateSession {
+        name: terminal(),
+        command: terminal_command(),
+        environment: vec![terminal_environment()],
+        working_directory: Some(TerminalWorkingDirectory::new("/workspace")),
+    });
+    assert_eq!(round_trip_request(create.clone()), create);
+
+    let retire = TerminalRequest::RetireSession(RetireSession { name: terminal() });
+    assert_eq!(round_trip_request(retire.clone()), retire);
+
+    let list = TerminalRequest::ListSessions(ListSessions {});
+    assert_eq!(round_trip_request(list.clone()), list);
+
+    let resolve = TerminalRequest::ResolveSession(ResolveSession { name: terminal() });
+    assert_eq!(round_trip_request(resolve.clone()), resolve);
+}
+
+#[test]
+fn create_session_request_round_trips_through_nota_text() {
+    round_trip_nota(
+        TerminalRequest::CreateSession(CreateSession {
+            name: terminal(),
+            command: TerminalCommand {
+                executable: TerminalCommandExecutable::new("pi"),
+                arguments: Vec::new(),
+            },
+            environment: Vec::new(),
+            working_directory: None,
+        }),
+        "(CreateSession operator (TerminalCommand pi []) [] None)",
+    );
+}
+
+#[test]
 fn terminal_request_exposes_contract_owned_operation_kind() {
     let cases = [
         (
@@ -347,6 +411,27 @@ fn terminal_request_exposes_contract_owned_operation_kind() {
                 terminal: terminal(),
             }),
             TerminalOperationKind::SubscribeTerminalWorkerLifecycle,
+        ),
+        (
+            TerminalRequest::CreateSession(CreateSession {
+                name: terminal(),
+                command: terminal_command(),
+                environment: vec![terminal_environment()],
+                working_directory: Some(TerminalWorkingDirectory::new("/workspace")),
+            }),
+            TerminalOperationKind::CreateSession,
+        ),
+        (
+            TerminalRequest::RetireSession(RetireSession { name: terminal() }),
+            TerminalOperationKind::RetireSession,
+        ),
+        (
+            TerminalRequest::ListSessions(ListSessions {}),
+            TerminalOperationKind::ListSessions,
+        ),
+        (
+            TerminalRequest::ResolveSession(ResolveSession { name: terminal() }),
+            TerminalOperationKind::ResolveSession,
         ),
     ];
 
@@ -440,6 +525,27 @@ fn terminal_request_variants_declare_expected_signal_root_verbs() {
                 terminal: terminal(),
             }),
             SignalVerb::Subscribe,
+        ),
+        (
+            TerminalRequest::CreateSession(CreateSession {
+                name: terminal(),
+                command: terminal_command(),
+                environment: vec![terminal_environment()],
+                working_directory: Some(TerminalWorkingDirectory::new("/workspace")),
+            }),
+            SignalVerb::Mutate,
+        ),
+        (
+            TerminalRequest::RetireSession(RetireSession { name: terminal() }),
+            SignalVerb::Retract,
+        ),
+        (
+            TerminalRequest::ListSessions(ListSessions {}),
+            SignalVerb::Match,
+        ),
+        (
+            TerminalRequest::ResolveSession(ResolveSession { name: terminal() }),
+            SignalVerb::Match,
         ),
     ];
 
@@ -637,6 +743,41 @@ fn injection_events_round_trip() {
 }
 
 #[test]
+fn session_management_replies_round_trip() {
+    let created = TerminalReply::SessionCreated(SessionCreated {
+        name: terminal(),
+        data_socket_path: data_socket_path("operator"),
+    });
+    assert_eq!(round_trip_reply(created.clone()), created);
+
+    let retired = TerminalReply::SessionRetired(SessionRetired {
+        name: terminal(),
+        exit_status: Some(TerminalExitStatus::Exited { code: 0 }),
+    });
+    assert_eq!(round_trip_reply(retired.clone()), retired);
+
+    let list = TerminalReply::SessionList(SessionList {
+        entries: vec![
+            SessionEntry {
+                name: terminal(),
+                data_socket_path: data_socket_path("operator"),
+            },
+            SessionEntry {
+                name: second_terminal(),
+                data_socket_path: data_socket_path("designer"),
+            },
+        ],
+    });
+    assert_eq!(round_trip_reply(list.clone()), list);
+
+    let resolved = TerminalReply::SessionResolved(SessionResolved {
+        name: terminal(),
+        data_socket_path: data_socket_path("operator"),
+    });
+    assert_eq!(round_trip_reply(resolved.clone()), resolved);
+}
+
+#[test]
 fn worker_lifecycle_events_round_trip() {
     let observations = vec![
         TerminalWorkerLifecycle::Started(TerminalWorkerKind::InputWriter),
@@ -725,6 +866,25 @@ fn subscription_retracted_reply_round_trips_through_length_prefixed_frame() {
 
     let lifted: TerminalReply = SubscriptionRetracted { token }.into();
     assert!(matches!(lifted, TerminalReply::SubscriptionRetracted(_)));
+}
+
+#[test]
+fn from_impls_lift_session_management_records() {
+    let create = CreateSession {
+        name: terminal(),
+        command: terminal_command(),
+        environment: vec![terminal_environment()],
+        working_directory: None,
+    };
+    let request: TerminalRequest = create.clone().into();
+    assert_eq!(request, TerminalRequest::CreateSession(create));
+
+    let resolved = SessionResolved {
+        name: terminal(),
+        data_socket_path: data_socket_path("operator"),
+    };
+    let reply: TerminalReply = resolved.clone().into();
+    assert_eq!(reply, TerminalReply::SessionResolved(resolved));
 }
 
 #[test]
