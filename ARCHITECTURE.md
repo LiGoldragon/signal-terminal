@@ -16,6 +16,37 @@ Owner-only terminal session lifecycle commands live in the separate
 `owner-signal-persona-terminal` contract. This ordinary surface can
 read the session registry; it cannot create or retire sessions.
 
+## MUST IMPLEMENT — signal architecture migration
+
+This contract is migrating to contract-local verbs per
+`primary/reports/designer/238-signal-architecture-redirection-contract-local-verbs.md`
+and `primary/reports/designer/239-signal-architecture-migration-plan.md`.
+
+Drop the SignalVerb prefixes on every request variant. The surface
+splits across four concern groups, each needing a contract-local verb:
+transport (`Connect`, `Input`, `Resize`, `Detach`, `Capture` —
+verb-form names for the current `TerminalConnection`, `TerminalInput`,
+`TerminalResize`, `TerminalDetachment`, `TerminalCapture`); session
+discovery (`Query` for both `ListSessions` and `ResolveSession`,
+payload distinguishes); prompt-pattern registry (`Register`,
+`Unregister`, `Query` for `RegisterPromptPattern`,
+`UnregisterPromptPattern`, `ListPromptPatterns`); input-gate /
+injection (`Acquire`, `Release`, `Inject` for `AcquireInputGate`,
+`ReleaseInputGate`, `WriteInjection`); worker-lifecycle subscription
+(`Watch` for `SubscribeTerminalWorkerLifecycle`, `Unwatch` for
+`TerminalWorkerLifecycleRetraction`). Drop redundant `Terminal*`
+prefixes throughout — crate namespace supplies it. As with the
+harness contract, the close-stream pair needs to remain compatible
+with the Path-A lifecycle discipline; surface that to the macro
+designer pass.
+
+References: `primary/reports/designer/238-signal-architecture-redirection-contract-local-verbs.md`,
+`primary/reports/designer/239-signal-architecture-migration-plan.md`.
+
+**Note to remover:** when the refactor lands, remove this section and
+add a `## Migration history — contract-local verbs (2026-05-XX)`
+paragraph noting the shape change.
+
 There is one `signal_channel!` invocation in `src/lib.rs` declaring
 the `Terminal` channel. Terminal-owned introspection records (typed
 projections of durable Sema rows for `persona-introspect`) live in
