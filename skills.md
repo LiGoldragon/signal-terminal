@@ -88,12 +88,11 @@ Signal endpoint.
 
 ## Load-bearing invariants
 
-- **Subscription close uses both sides.** The kernel grammar at
-  `signal-core/macros/src/validate.rs:303–331` requires the
-  `stream` block to name a request-side `Retract` variant; the
-  reply-side `SubscriptionRetracted` ack is the final event
-  consumers bind to. Both are present in `src/lib.rs`. Do not
-  remove either.
+- **Subscription close uses both sides.** The kernel grammar in
+  `signal-frame/macros/src/validate.rs` requires the `stream` block
+  to name a request-side `Retract` variant; the reply-side
+  `SubscriptionRetracted` ack is the final event consumers bind to.
+  Both are present in `src/lib.rs`. Do not remove either.
 - **Wire enums are closed.** No `Unknown` variant on the wire.
   `InjectionRejectionReason::UnknownTerminal` and `UnknownLease`
   name **positive** "the entity you sent isn't in our state"
