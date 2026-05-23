@@ -9,13 +9,13 @@
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
 use signal_persona_terminal::{
     AcquireInputGate, GateAcquired, GateBusy, InjectionAck, InjectionRejected,
-    InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason, PromptState,
-    ReleaseInputGate, ResolveSession, SessionResolved, SubscribeTerminalWorkerLifecycle,
-    SubscriptionRetracted, TerminalCapture, TerminalColumns, TerminalConnection,
-    TerminalDetachment, TerminalDetachmentReason, TerminalGeneration, TerminalInput,
-    TerminalInputAccepted, TerminalInputBytes, TerminalName, TerminalReady, TerminalReply,
-    TerminalRequest, TerminalResize, TerminalRows, TerminalSequence, TerminalWorkerLifecycleToken,
-    WriteInjection,
+    InjectionRejectionReason, InputGateLease, InputGateLeaseIdentifier, InputGateReason,
+    PromptState, ReleaseInputGate, ResolveSession, SessionResolved,
+    SubscribeTerminalWorkerLifecycle, SubscriptionRetracted, TerminalCapture, TerminalColumns,
+    TerminalConnection, TerminalDetachment, TerminalDetachmentReason, TerminalGeneration,
+    TerminalInput, TerminalInputAccepted, TerminalInputBytes, TerminalName, TerminalReady,
+    TerminalReply, TerminalRequest, TerminalResize, TerminalRows, TerminalSequence,
+    TerminalWorkerLifecycleToken, WriteInjection,
 };
 
 const CANONICAL: &str = include_str!("../examples/canonical.nota");
@@ -32,7 +32,7 @@ fn token() -> TerminalWorkerLifecycleToken {
 
 fn lease() -> InputGateLease {
     InputGateLease {
-        id: InputGateLeaseId::new(42),
+        id: InputGateLeaseIdentifier::new(42),
     }
 }
 
@@ -107,7 +107,7 @@ fn canonical_request_examples_round_trip() {
         TerminalRequest::AcquireInputGate(AcquireInputGate {
             terminal: operator(),
             reason: InputGateReason::new("send router-delivered command"),
-            prompt_pattern_id: None,
+            prompt_pattern_identifier: None,
         }),
         "(AcquireInputGate (operator [send router-delivered command] None))",
     );
@@ -165,7 +165,7 @@ fn canonical_reply_examples_round_trip() {
     round_trip(
         TerminalReply::GateBusy(GateBusy {
             terminal: operator(),
-            current_holder: InputGateLeaseId::new(41),
+            current_holder: InputGateLeaseIdentifier::new(41),
         }),
         "(GateBusy (operator 41))",
     );

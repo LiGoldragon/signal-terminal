@@ -5,9 +5,9 @@ use signal_core::{
 };
 use signal_persona_terminal::{
     AcquireInputGate, GateAcquired, GateBusy, GateReleased, InjectionAck, InjectionRejected,
-    InjectionRejectionReason, InputGateLease, InputGateLeaseId, InputGateReason,
+    InjectionRejectionReason, InputGateLease, InputGateLeaseIdentifier, InputGateReason,
     ListPromptPatterns, ListSessions, PromptPattern, PromptPatternBytes, PromptPatternEntry,
-    PromptPatternId, PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered,
+    PromptPatternIdentifier, PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered,
     PromptState, RegisterPromptPattern, ReleaseInputGate, ResolveSession, SessionEntry,
     SessionList, SessionResolved, SubscribeTerminalWorkerLifecycle, SubscriptionRetracted,
     TerminalByteCount, TerminalCapture, TerminalCaptured, TerminalColumns, TerminalConnection,
@@ -33,13 +33,13 @@ fn data_socket_path(name: &str) -> signal_persona::WirePath {
     signal_persona::WirePath::new(format!("/run/persona/terminal/sessions/{name}/data.sock"))
 }
 
-fn prompt_pattern_id() -> PromptPatternId {
-    PromptPatternId::new("codex-ready")
+fn prompt_pattern_identifier() -> PromptPatternIdentifier {
+    PromptPatternIdentifier::new("codex-ready")
 }
 
 fn input_gate_lease() -> InputGateLease {
     InputGateLease {
-        id: InputGateLeaseId::new(42),
+        id: InputGateLeaseIdentifier::new(42),
     }
 }
 
@@ -195,7 +195,7 @@ fn prompt_pattern_requests_round_trip() {
 
     let unregister = TerminalRequest::UnregisterPromptPattern(UnregisterPromptPattern {
         terminal: terminal(),
-        pattern_id: prompt_pattern_id(),
+        pattern_id: prompt_pattern_identifier(),
     });
     assert_eq!(round_trip_request(unregister.clone()), unregister);
 
@@ -221,14 +221,14 @@ fn input_gate_requests_round_trip() {
     let acquire = TerminalRequest::AcquireInputGate(AcquireInputGate {
         terminal: terminal(),
         reason: InputGateReason::new("message delivery"),
-        prompt_pattern_id: Some(prompt_pattern_id()),
+        prompt_pattern_identifier: Some(prompt_pattern_identifier()),
     });
     assert_eq!(round_trip_request(acquire.clone()), acquire);
 
     let acquire_without_prompt_check = TerminalRequest::AcquireInputGate(AcquireInputGate {
         terminal: terminal(),
         reason: InputGateReason::new("raw control"),
-        prompt_pattern_id: None,
+        prompt_pattern_identifier: None,
     });
     assert_eq!(
         round_trip_request(acquire_without_prompt_check.clone()),
@@ -248,7 +248,7 @@ fn acquire_input_gate_request_round_trips_through_nota_text() {
         TerminalRequest::AcquireInputGate(AcquireInputGate {
             terminal: terminal(),
             reason: InputGateReason::new("message delivery"),
-            prompt_pattern_id: Some(prompt_pattern_id()),
+            prompt_pattern_identifier: Some(prompt_pattern_identifier()),
         }),
         "(AcquireInputGate (operator [message delivery] (Some codex-ready)))",
     );
@@ -326,7 +326,7 @@ fn terminal_request_exposes_contract_owned_operation_kind() {
         (
             TerminalRequest::UnregisterPromptPattern(UnregisterPromptPattern {
                 terminal: terminal(),
-                pattern_id: prompt_pattern_id(),
+                pattern_id: prompt_pattern_identifier(),
             }),
             TerminalOperationKind::UnregisterPromptPattern,
         ),
@@ -340,7 +340,7 @@ fn terminal_request_exposes_contract_owned_operation_kind() {
             TerminalRequest::AcquireInputGate(AcquireInputGate {
                 terminal: terminal(),
                 reason: InputGateReason::new("message delivery"),
-                prompt_pattern_id: Some(prompt_pattern_id()),
+                prompt_pattern_identifier: Some(prompt_pattern_identifier()),
             }),
             TerminalOperationKind::AcquireInputGate,
         ),
@@ -427,7 +427,7 @@ fn terminal_request_variants_declare_expected_signal_root_verbs() {
         (
             TerminalRequest::UnregisterPromptPattern(UnregisterPromptPattern {
                 terminal: terminal(),
-                pattern_id: prompt_pattern_id(),
+                pattern_id: prompt_pattern_identifier(),
             }),
             SignalVerb::Retract,
         ),
@@ -441,7 +441,7 @@ fn terminal_request_variants_declare_expected_signal_root_verbs() {
             TerminalRequest::AcquireInputGate(AcquireInputGate {
                 terminal: terminal(),
                 reason: InputGateReason::new("message delivery"),
-                prompt_pattern_id: Some(prompt_pattern_id()),
+                prompt_pattern_identifier: Some(prompt_pattern_identifier()),
             }),
             SignalVerb::Assert,
         ),
@@ -582,20 +582,20 @@ fn terminal_rejected_round_trips_for_each_reason() {
 fn prompt_pattern_events_round_trip() {
     let registered = TerminalReply::PromptPatternRegistered(PromptPatternRegistered {
         terminal: terminal(),
-        pattern_id: prompt_pattern_id(),
+        pattern_id: prompt_pattern_identifier(),
     });
     assert_eq!(round_trip_reply(registered.clone()), registered);
 
     let unregistered = TerminalReply::PromptPatternUnregistered(PromptPatternUnregistered {
         terminal: terminal(),
-        pattern_id: prompt_pattern_id(),
+        pattern_id: prompt_pattern_identifier(),
     });
     assert_eq!(round_trip_reply(unregistered.clone()), unregistered);
 
     let list = TerminalReply::PromptPatternList(PromptPatternList {
         terminal: terminal(),
         entries: vec![PromptPatternEntry {
-            pattern_id: prompt_pattern_id(),
+            pattern_id: prompt_pattern_identifier(),
             pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(b"> ".to_vec())),
         }],
     });
@@ -621,7 +621,7 @@ fn input_gate_events_round_trip() {
 
     let busy = TerminalReply::GateBusy(GateBusy {
         terminal: terminal(),
-        current_holder: InputGateLeaseId::new(7),
+        current_holder: InputGateLeaseIdentifier::new(7),
     });
     assert_eq!(round_trip_reply(busy.clone()), busy);
 
@@ -763,7 +763,7 @@ fn from_impl_lifts_gate_acquisition_into_request() {
     let payload = AcquireInputGate {
         terminal: terminal(),
         reason: InputGateReason::new("delivery"),
-        prompt_pattern_id: Some(prompt_pattern_id()),
+        prompt_pattern_identifier: Some(prompt_pattern_identifier()),
     };
     let request: TerminalRequest = payload.clone().into();
     assert_eq!(request, TerminalRequest::AcquireInputGate(payload));
@@ -818,7 +818,7 @@ fn terminal_contract_names_persona_terminal_as_the_production_endpoint() {
 fn terminal_daemon_configuration_round_trips_through_nota_text() {
     use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
     use signal_persona::{SocketMode, WirePath};
-    use signal_persona_origin::{OwnerIdentity, UnixUserId};
+    use signal_persona_origin::{OwnerIdentity, UnixUserIdentifier};
     use signal_persona_terminal::TerminalDaemonConfiguration;
 
     let configuration = TerminalDaemonConfiguration {
@@ -827,7 +827,7 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
         supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
         supervision_socket_mode: SocketMode::new(0o600),
         store_path: WirePath::new("/var/lib/persona/X/terminal.redb"),
-        owner_identity: OwnerIdentity::UnixUser(UnixUserId::new(1000)),
+        owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
     let mut encoder = Encoder::new();
@@ -846,7 +846,7 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
 fn terminal_daemon_configuration_round_trips_through_rkyv() {
     use nota_config::ConfigurationRecord;
     use signal_persona::{SocketMode, WirePath};
-    use signal_persona_origin::{OwnerIdentity, UnixUserId};
+    use signal_persona_origin::{OwnerIdentity, UnixUserIdentifier};
     use signal_persona_terminal::TerminalDaemonConfiguration;
 
     let configuration = TerminalDaemonConfiguration {
@@ -855,7 +855,7 @@ fn terminal_daemon_configuration_round_trips_through_rkyv() {
         supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
         supervision_socket_mode: SocketMode::new(0o600),
         store_path: WirePath::new("/var/lib/persona/X/terminal.redb"),
-        owner_identity: OwnerIdentity::UnixUser(UnixUserId::new(1000)),
+        owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
     let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&configuration).expect("archive");

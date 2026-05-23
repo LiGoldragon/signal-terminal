@@ -123,11 +123,11 @@ Records local to this contract (see source for the full list):
 - Byte and geometry types: `TerminalInputBytes`,
   `TerminalTranscriptBytes`, `TerminalRows`, `TerminalColumns`,
   `TerminalByteCount`.
-- Prompt-pattern records: `PromptPatternId`, `PromptPatternBytes`,
+- Prompt-pattern records: `PromptPatternIdentifier`, `PromptPatternBytes`,
   `PromptPattern`, `RegisterPromptPattern`, `UnregisterPromptPattern`,
   `ListPromptPatterns`, `PromptPatternEntry`, `PromptPatternRegistered`,
   `PromptPatternUnregistered`, `PromptPatternList`.
-- Input-gate records: `InputGateReason`, `InputGateLeaseId`,
+- Input-gate records: `InputGateReason`, `InputGateLeaseIdentifier`,
   `InputGateLease`, `PromptState`, `AcquireInputGate`,
   `ReleaseInputGate`, `WriteInjection`, `GateAcquired`, `GateBusy`,
   `GateReleased`, `InjectionAck`, `InjectionRejected`,

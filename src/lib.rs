@@ -220,9 +220,9 @@ pub struct SessionResolved {
 #[derive(
     Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
 )]
-pub struct PromptPatternId(String);
+pub struct PromptPatternIdentifier(String);
 
-impl PromptPatternId {
+impl PromptPatternIdentifier {
     pub fn new(value: impl Into<String>) -> Self {
         Self(value.into())
     }
@@ -307,7 +307,7 @@ pub struct RegisterPromptPattern {
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct UnregisterPromptPattern {
     pub terminal: TerminalName,
-    pub pattern_id: PromptPatternId,
+    pub pattern_id: PromptPatternIdentifier,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
@@ -317,20 +317,20 @@ pub struct ListPromptPatterns {
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct PromptPatternEntry {
-    pub pattern_id: PromptPatternId,
+    pub pattern_id: PromptPatternIdentifier,
     pub pattern: PromptPattern,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct PromptPatternRegistered {
     pub terminal: TerminalName,
-    pub pattern_id: PromptPatternId,
+    pub pattern_id: PromptPatternIdentifier,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct PromptPatternUnregistered {
     pub terminal: TerminalName,
-    pub pattern_id: PromptPatternId,
+    pub pattern_id: PromptPatternIdentifier,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
@@ -366,9 +366,9 @@ impl InputGateReason {
     Eq,
     Hash,
 )]
-pub struct InputGateLeaseId(u64);
+pub struct InputGateLeaseIdentifier(u64);
 
-impl InputGateLeaseId {
+impl InputGateLeaseIdentifier {
     pub const fn new(value: u64) -> Self {
         Self(value)
     }
@@ -380,7 +380,7 @@ impl InputGateLeaseId {
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct InputGateLease {
-    pub id: InputGateLeaseId,
+    pub id: InputGateLeaseIdentifier,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
@@ -442,7 +442,7 @@ impl NotaDecode for PromptState {
 pub struct AcquireInputGate {
     pub terminal: TerminalName,
     pub reason: InputGateReason,
-    pub prompt_pattern_id: Option<PromptPatternId>,
+    pub prompt_pattern_identifier: Option<PromptPatternIdentifier>,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
@@ -468,7 +468,7 @@ pub struct GateAcquired {
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
 pub struct GateBusy {
     pub terminal: TerminalName,
-    pub current_holder: InputGateLeaseId,
+    pub current_holder: InputGateLeaseIdentifier,
 }
 
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
