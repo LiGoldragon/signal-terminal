@@ -1,4 +1,4 @@
-use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
+use nota_next::{NotaDecode, NotaEncode, NotaSource};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 use signal_terminal::{
     TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState, TerminalEventObservation,
@@ -38,13 +38,12 @@ fn round_trip_nota<T>(value: T, expected: &str)
 where
     T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
 {
-    let mut encoder = Encoder::new();
-    value.encode(&mut encoder).expect("encode nota text");
-    let encoded = encoder.into_string();
+    let encoded = value.to_nota();
     assert_eq!(encoded, expected);
 
-    let mut decoder = Decoder::new(&encoded);
-    let recovered = T::decode(&mut decoder).expect("decode nota text");
+    let recovered = NotaSource::new(&encoded)
+        .parse::<T>()
+        .expect("decode nota text");
     assert_eq!(recovered, value);
 }
 
@@ -76,16 +75,15 @@ fn terminal_session_observation_typed_control_and_data_paths_round_trip_via_nota
         "/tmp/terminal/operator/data.sock",
     );
 
-    let mut encoder = Encoder::new();
-    observation.encode(&mut encoder).expect("encode nota");
-    let encoded = encoder.into_string();
+    let encoded = observation.to_nota();
     assert_eq!(
         encoded,
-        "(operator [/tmp/terminal/operator/control.sock] [/tmp/terminal/operator/data.sock] 1 0 Ready)"
+        "([operator] [/tmp/terminal/operator/control.sock] [/tmp/terminal/operator/data.sock] 1 0 Ready)"
     );
 
-    let mut decoder = Decoder::new(&encoded);
-    let recovered = TerminalSessionObservation::decode(&mut decoder).expect("decode nota");
+    let recovered = NotaSource::new(&encoded)
+        .parse::<TerminalSessionObservation>()
+        .expect("decode nota");
     assert_eq!(recovered, observation);
     assert_eq!(
         recovered.control_socket_path().as_str(),
@@ -183,6 +181,6 @@ fn terminal_introspection_snapshot_round_trips_through_nota_text() {
                 "session rotated",
             )],
         },
-        "([(operator [/run/persona/engine/terminal.control.sock] [/run/persona/engine/terminal.data.sock] 1 0 Ready)] [(7 operator WriteInjection Started)] [] [] [(operator Ready 2)] [(operator [session rotated] Archived)])",
+        "([([operator] [/run/persona/engine/terminal.control.sock] [/run/persona/engine/terminal.data.sock] 1 0 Ready)] [(7 [operator] WriteInjection Started)] [] [] [([operator] Ready 2)] [([operator] [session rotated] Archived)])",
     );
 }

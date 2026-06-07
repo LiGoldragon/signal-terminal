@@ -1,5 +1,5 @@
 {
-  description = "signal-terminal - Signal contract for persona-harness to terminal transport";
+  description = "signal-terminal - Signal contract for harness to terminal transport";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

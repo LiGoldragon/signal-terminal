@@ -15,12 +15,12 @@ Before changing code in this repo, read:
 - `~/primary/skills/nix-discipline.md`
 - this repo's `ARCHITECTURE.md`
 - the consumers' `ARCHITECTURE.md` files
-  (`persona-harness/`, `terminal/`, `terminal-cell/`).
+  (`harness/`, `terminal/`, `terminal-cell/`).
 
 ## What this repo is for
 
 `signal-terminal` is the typed control-plane contract
-`persona-harness` and router delivery adapters use to ask
+`harness` and router delivery adapters use to ask
 `terminal` for terminal work. The raw attached-viewer byte
 plane stays outside this contract: PTY bytes, socket bytes, and
 viewer-pump bytes live in `terminal-cell` / `terminal`
@@ -96,11 +96,10 @@ Signal endpoint.
   `TerminalRequestUnimplemented` carrying typed
   `TerminalOperationKind` and `TerminalUnimplementedReason`, not a
   text error or a hang.
-- **Injection ordering is enforced by sequence number.**
-  `WriteInjection.injection_sequence: u64` is monotonic per
-  lease-holder; out-of-order use returns
-  `InjectionRejectionReason::InvalidSequence`. Do not add a retry
-  policy "for ordering."
+- **Write injection is lease-scoped.** `WriteInjection` carries
+  `TerminalName`, `InputGateLease`, and bytes; `terminal` returns the
+  generated `TerminalGeneration` and `TerminalSequence` in
+  `InjectionAck`. Do not add a retry policy "for ordering."
 - **Every request variant declares a contract-local operation head.**
   The `signal_channel!` declaration is the source of truth;
   round-trip tests assert every generated operation head.
@@ -155,7 +154,7 @@ examples and round-trip tests use the operation heads.
 - this workspace's `skills/subscription-lifecycle.md`.
 - this workspace's `skills/push-not-pull.md`.
 - this workspace's `skills/architectural-truth-tests.md`.
-- `signal-persona-harness`'s `skills.md`,
-  `signal-persona-system`'s `skills.md`, and `signal-criome`'s
+- `signal-harness`'s `skills.md`,
+  `signal-system`'s `skills.md`, and `signal-criome`'s
   `skills.md` — sibling contracts using the same Path A subscription
   discipline.

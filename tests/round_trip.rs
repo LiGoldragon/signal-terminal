@@ -1,4 +1,4 @@
-use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
+use nota_next::{NotaDecode, NotaEncode, NotaSource};
 use signal_frame::{
     ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
     SignalOperationHeads, StreamEventIdentifier, SubReply, SubscriptionTokenInner,
@@ -29,8 +29,10 @@ fn second_terminal() -> TerminalName {
     TerminalName::new("designer")
 }
 
-fn data_socket_path(name: &str) -> signal_persona::WirePath {
-    signal_persona::WirePath::new(format!("/run/persona/terminal/sessions/{name}/data.sock"))
+fn data_socket_path(name: &str) -> signal_engine_management::WirePath {
+    signal_engine_management::WirePath::new(format!(
+        "/run/persona/terminal/sessions/{name}/data.sock"
+    ))
 }
 
 fn prompt_pattern_identifier() -> PromptPatternIdentifier {
@@ -116,13 +118,12 @@ fn round_trip_nota<T>(value: T, expected: &str)
 where
     T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
 {
-    let mut encoder = Encoder::new();
-    value.encode(&mut encoder).expect("encode nota text");
-    let encoded = encoder.into_string();
+    let encoded = value.to_nota();
     assert_eq!(encoded, expected);
 
-    let mut decoder = Decoder::new(&encoded);
-    let recovered = T::decode(&mut decoder).expect("decode nota text");
+    let recovered = NotaSource::new(&encoded)
+        .parse::<T>()
+        .expect("decode nota text");
     assert_eq!(recovered, value);
 }
 
@@ -211,7 +212,7 @@ fn prompt_pattern_registration_request_round_trips_through_nota_text() {
             terminal: terminal(),
             pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(b"> ".to_vec())),
         }),
-        "(RegisterPromptPattern (operator (LiteralSuffix [62 32])))",
+        "(RegisterPromptPattern ([operator] (LiteralSuffix [62 32])))",
     );
 }
 
@@ -249,7 +250,7 @@ fn acquire_input_gate_request_round_trips_through_nota_text() {
             reason: InputGateReason::new("message delivery"),
             prompt_pattern_identifier: Some(prompt_pattern_identifier()),
         }),
-        "(AcquireInputGate (operator [message delivery] (Some codex-ready)))",
+        "(AcquireInputGate ([operator] [message delivery] (Some [codex-ready])))",
     );
 }
 
@@ -584,7 +585,7 @@ fn gate_acquired_event_round_trips_through_nota_text() {
             lease: input_gate_lease(),
             prompt_state: PromptState::Clean,
         }),
-        "(GateAcquired (operator (42) (Clean)))",
+        "(GateAcquired ([operator] (42) (Clean)))",
     );
 }
 
@@ -676,7 +677,7 @@ fn worker_lifecycle_snapshot_round_trips_through_nota_text() {
                 },
             ],
         }),
-        "(TerminalWorkerLifecycleSnapshot (operator [(Started InputWriter) (Stopped OutputReader (OutputReaderFinished))]))",
+        "(TerminalWorkerLifecycleSnapshot ([operator] [(Started InputWriter) (Stopped OutputReader (OutputReaderFinished))]))",
     );
 }
 
@@ -759,8 +760,7 @@ fn terminal_contract_names_terminal_as_the_production_endpoint() {
 
 #[test]
 fn terminal_daemon_configuration_round_trips_through_nota_text() {
-    use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
-    use signal_persona::{SocketMode, WirePath};
+    use signal_engine_management::{SocketMode, WirePath};
     use signal_persona_origin::{OwnerIdentity, UnixUserIdentifier};
     use signal_terminal::TerminalDaemonConfiguration;
 
@@ -773,22 +773,17 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
         owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
-    let mut encoder = Encoder::new();
-    configuration
-        .encode(&mut encoder)
-        .expect("encode configuration");
-    let text = encoder.into_string();
-    let mut decoder = Decoder::new(&text);
-    let recovered =
-        TerminalDaemonConfiguration::decode(&mut decoder).expect("decode configuration");
+    let text = configuration.to_nota();
+    let recovered = NotaSource::new(&text)
+        .parse::<TerminalDaemonConfiguration>()
+        .expect("decode configuration");
 
     assert_eq!(recovered, configuration);
 }
 
 #[test]
 fn terminal_daemon_configuration_round_trips_through_rkyv() {
-    use nota_config::ConfigurationRecord;
-    use signal_persona::{SocketMode, WirePath};
+    use signal_engine_management::{SocketMode, WirePath};
     use signal_persona_origin::{OwnerIdentity, UnixUserIdentifier};
     use signal_terminal::TerminalDaemonConfiguration;
 

@@ -43,7 +43,7 @@ observer hook:
 - **Prompt-pattern registry:** `Register`, `Unregister`, `Query` — the
   terminal-ready shape that makes write injection safe to attempt.
 - **Input-gate / injection:** `Acquire`, `Release`, `Inject` — the
-  exclusive write lease and sequenced write injection.
+  exclusive write lease and terminal-minted injection acknowledgement.
 - **Worker-lifecycle subscription:** `Watch`/`Unwatch` over
   `TerminalWorkerLifecycleStream`, plus the mandatory `Tap`/`Untap`
   observer hook.
@@ -61,8 +61,8 @@ observation publish time, not on the wire.
 - Subscription close uses **Path A**: a request-side `Unwatch` carrying
   the per-stream token, plus a reply-side `SubscriptionRetracted` ack
   echoing it.
-- Injection ordering is enforced by `injection_sequence`, not retry;
-  out-of-order use returns `InjectionRejectionReason::InvalidSequence`.
+- Write injection is lease-scoped; `terminal` mints the resulting
+  generation and sequence in `InjectionAck`.
 - Request payloads do not mint terminal generations, leases, or
   sequences the daemon owns; `terminal` mints those.
 - No stringly-typed dispatch. Kind, reason, and state fields are typed

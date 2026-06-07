@@ -4,7 +4,7 @@
 //! remains the database and reducer owner; this module owns only the typed
 //! shape that `persona-introspect` and other observers can name.
 
-use nota_codec::{NotaEnum, NotaRecord, NotaTransparent};
+use nota_next::{NotaDecode, NotaEncode};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 
 use crate::{
@@ -15,7 +15,8 @@ use crate::{
     Archive,
     RkyvSerialize,
     RkyvDeserialize,
-    NotaTransparent,
+    NotaEncode,
+    NotaDecode,
     Debug,
     Clone,
     Copy,
@@ -36,7 +37,16 @@ impl TerminalObservationSequence {
 }
 
 #[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct TerminalControlSocketPath(String);
 
@@ -55,7 +65,16 @@ impl TerminalControlSocketPath {
 }
 
 #[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct TerminalDataSocketPath(String);
 
@@ -74,7 +93,16 @@ impl TerminalDataSocketPath {
 }
 
 #[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct TerminalViewerName(String);
 
@@ -89,7 +117,16 @@ impl TerminalViewerName {
 }
 
 #[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaTransparent, Debug, Clone, PartialEq, Eq, Hash,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 pub struct TerminalArchiveReason(String);
 
@@ -103,7 +140,18 @@ impl TerminalArchiveReason {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaEnum, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
 pub enum TerminalSessionState {
     Ready,
     Exited,
@@ -118,7 +166,9 @@ impl TerminalSessionState {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalSessionObservation {
     pub terminal: TerminalName,
     pub control_socket_path: TerminalControlSocketPath,
@@ -169,12 +219,25 @@ impl TerminalSessionObservation {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaEnum, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
 pub enum TerminalDeliveryAttemptState {
     Started,
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalDeliveryAttemptObservation {
     pub sequence: TerminalObservationSequence,
     pub terminal: TerminalName,
@@ -213,7 +276,9 @@ impl TerminalDeliveryAttemptObservation {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalEventObservation {
     pub sequence: TerminalObservationSequence,
     pub terminal: TerminalName,
@@ -246,13 +311,26 @@ impl TerminalEventObservation {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaEnum, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
 pub enum TerminalViewerAttachmentState {
     Attached,
     Detached,
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalViewerAttachmentObservation {
     pub sequence: TerminalObservationSequence,
     pub terminal: TerminalName,
@@ -292,7 +370,9 @@ impl TerminalViewerAttachmentObservation {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalSessionHealthObservation {
     pub terminal: TerminalName,
     pub state: TerminalSessionState,
@@ -325,12 +405,25 @@ impl TerminalSessionHealthObservation {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaEnum, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    NotaEncode,
+    NotaDecode,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+)]
 pub enum TerminalSessionArchiveState {
     Archived,
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalSessionArchiveObservation {
     pub terminal: TerminalName,
     pub reason: TerminalArchiveReason,
@@ -359,7 +452,9 @@ impl TerminalSessionArchiveObservation {
     }
 }
 
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, NotaRecord, Debug, Clone, PartialEq, Eq)]
+#[derive(
+    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
+)]
 pub struct TerminalIntrospectionSnapshot {
     pub sessions: Vec<TerminalSessionObservation>,
     pub delivery_attempts: Vec<TerminalDeliveryAttemptObservation>,
