@@ -12,11 +12,9 @@ It carries control records for terminal connection, input, resize, capture,
 prompt pattern registration, input gate leases, write injection acknowledgements,
 terminal worker lifecycle observations, and read-only session registry lookup.
 Raw PTY/viewer bytes remain on the terminal data plane and are not
-Signal-framed by this crate. Owner-only session lifecycle commands such as
-creating or retiring sessions live in `owner-signal-terminal`, not in
+Signal-framed by this crate. Meta-only session lifecycle commands such as
+creating or retiring sessions live in the terminal meta signal contract, not in
 this ordinary communication contract.
 
-Each `TerminalRequest` declares its Signal root through
-`TerminalRequest::signal_verb()`: write/lease creation requests use `Assert`,
-resize uses `Mutate`, detach/remove/release requests use `Retract`,
-capture/list reads use `Match`, and worker lifecycle streams use `Subscribe`.
+Each `TerminalRequest` travels as a contract-local `signal-frame`
+operation head. Sema classification is daemon-internal.

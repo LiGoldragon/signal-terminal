@@ -13,8 +13,8 @@ injection, and worker-lifecycle observations. Companion to
 This file carries only the intent that is FOR this `signal-terminal`
 contract. Workspace-shape intent stays in the primary workspace
 `primary/INTENT.md`. Component daemon intent stays in
-`terminal/INTENT.md`. Owner-only session lifecycle intent stays in
-`owner-signal-terminal/INTENT.md`.
+`terminal/INTENT.md`. Meta-only session lifecycle intent stays in
+the terminal meta signal contract.
 
 ## Why this repo exists
 
@@ -26,8 +26,8 @@ raw attached-viewer byte plane stays OUTSIDE this contract — PTY bytes,
 socket bytes, and viewer-pump bytes live in `terminal-cell`/`terminal`
 implementation code, on a separate data socket, never in Signal frames.
 This ordinary surface can read the session registry; it cannot create or
-retire sessions — those owner-only commands live in
-`owner-signal-terminal`.
+retire sessions — those meta-only commands live in the terminal meta
+signal contract.
 
 ## The channel shape
 
@@ -102,7 +102,7 @@ and Sema class. Sema classification never appears on the wire.
 Terminal durable Sema rows that need to be inspectable outside
 `terminal` carry typed record shapes in this contract (`src/introspection.rs`).
 The contract owns the *vocabulary* of inspectable terminal state; the
-component still owns its redb file, reducers, consistency model, and
+component still owns its sema-engine store, reducers, consistency model, and
 redaction policy. `introspect` asks the running component for these
 records; it never opens `terminal`'s database directly.
 
@@ -110,7 +110,7 @@ records; it never opens `terminal`'s database directly.
 
 - This crate carries only typed wire vocabulary, NOTA codecs, and
   round-trip witnesses.
-- No runtime code: no actors, no tokio, no socket binding, no redb, no
+- No runtime code: no actors, no tokio, no socket binding, no storage, no
   terminal-cell transport logic.
 - Contract types derive NOTA in this crate. Clients do not carry shadow
   types that re-derive the text surface.
@@ -126,9 +126,9 @@ records; it never opens `terminal`'s database directly.
 This crate does not own:
 
 - `terminal` daemon runtime, the harness actor, or component lifecycle;
-- `terminal.redb` or any storage tables, reducers, or transcript state;
+- `terminal.sema` or any storage tables, reducers, or transcript state;
 - the `terminal-cell` daemon behind `terminal`;
-- owner-only session lifecycle commands (`owner-signal-terminal`);
+- meta-only session lifecycle commands;
 - router delivery policy, OS focus policy, or prompt interpretation;
 - the raw byte data plane, transport loop, reconnect policy, or socket
   path.
@@ -140,8 +140,7 @@ This crate does not own:
   migration.
 - `../terminal/INTENT.md` — daemon-side intent (terminal sessions,
   schema-driven planes, state).
-- `../owner-signal-terminal/INTENT.md` — owner-only session lifecycle
-  contract.
+- terminal meta signal contract — meta-only session lifecycle contract.
 - `primary/skills/contract-repo.md` — contract repo discipline and
   naming rules.
 - `primary/skills/component-triad.md` — repo triad structure, wire

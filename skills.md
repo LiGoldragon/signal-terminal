@@ -2,8 +2,6 @@
 
 *Per-repo agent guide for the terminal transport control contract.*
 
----
-
 ## Checkpoint — read before editing
 
 Before changing code in this repo, read:
@@ -19,8 +17,6 @@ Before changing code in this repo, read:
 - the consumers' `ARCHITECTURE.md` files
   (`persona-harness/`, `terminal/`, `terminal-cell/`).
 
----
-
 ## What this repo is for
 
 `signal-terminal` is the typed control-plane contract
@@ -31,8 +27,9 @@ viewer-pump bytes live in `terminal-cell` / `terminal`
 implementation code, not in Signal frames.
 
 This is the ordinary terminal communication surface. It can query the
-session registry, but it cannot create or retire sessions. Owner-only
-session lifecycle mutation is declared in `owner-signal-terminal`.
+session registry, but it cannot create or retire sessions. Meta-only
+session lifecycle mutation is declared in the terminal meta signal
+contract.
 
 The terminal-worker-lifecycle subscription follows the canonical
 lifecycle in `~/primary/skills/subscription-lifecycle.md`: open with
@@ -40,8 +37,6 @@ a typed `Subscribe`, push typed `TerminalWorkerLifecycleEvent`
 events, close with a typed request-side `Retract` carrying the
 per-stream token, end with a typed reply-side `SubscriptionRetracted`
 ack echoing the token.
-
----
 
 ## What this repo owns
 
@@ -76,15 +71,13 @@ ack echoing the token.
 - Runtime database access, reducers, or consistency policy for
   introspection. `terminal` owns those; this contract owns
   only the typed observation vocabulary.
-- Owner-only session lifecycle commands (`CreateSession`,
-  `RetireSession`, and their replies). Those belong to
-  `owner-signal-terminal`.
+- Meta-only session lifecycle commands (`CreateSession`,
+  `RetireSession`, and their replies). Those belong to the terminal
+  meta signal contract.
 
 `terminal-cell` is the low-level PTY primitive behind
 `terminal`; do not describe it as an independent production
 Signal endpoint.
-
----
 
 ## Load-bearing invariants
 
@@ -108,15 +101,14 @@ Signal endpoint.
   lease-holder; out-of-order use returns
   `InjectionRejectionReason::InvalidSequence`. Do not add a retry
   policy "for ordering."
-- **Every request variant declares a Signal root verb.** The
-  `signal_channel!` declaration is the source of truth; the macro
-  generates `TerminalRequest::signal_verb()` and round-trip tests
-  assert every variant.
-- **Session lifecycle mutation is owner-only.** Do not add
+- **Every request variant declares a contract-local operation head.**
+  The `signal_channel!` declaration is the source of truth;
+  round-trip tests assert every generated operation head.
+- **Session lifecycle mutation is meta-only.** Do not add
   `CreateSession`, `RetireSession`, or equivalent lifecycle mutation
-  variants to the ordinary `TerminalRequest`; use
-  `owner-signal-terminal`.
-- **No runtime code.** No Kameo, Tokio, socket, redb, or daemon
+  variants to the ordinary `TerminalRequest`; use the terminal meta
+  signal contract.
+- **No runtime code.** No Kameo, Tokio, socket, storage, or daemon
   glue in this crate.
 - **Round trips cover every variant.** rkyv length-prefixed frame
   round trips in `tests/round_trip.rs`; canonical NOTA examples in
@@ -125,8 +117,6 @@ Signal endpoint.
 - **Pin upstream contracts via a named API reference.** Cargo deps
   declare `git = "..."` with a named branch/bookmark, never raw
   `rev = "..."`.
-
----
 
 ## Editing patterns
 
@@ -151,18 +141,13 @@ Signal endpoint.
 4. Witness the full subscribe → event → retract → ack → end
    lifecycle.
 
----
+## NOTA codec shape
 
-## NOTA codec quirk
-
-The `signal_channel!` macro emits a request variant's NOTA head as
-the **payload's record head**, not the Rust variant name. For
-example, `TerminalRequest::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken { .. })`
-encodes as `(TerminalWorkerLifecycleToken (...))`, not
-`(TerminalWorkerLifecycleRetraction ...)`. Canonical examples and
-round-trip tests use the payload heads.
-
----
+The `signal_channel!` macro emits each request's NOTA head from the
+contract-local operation name. For example,
+`TerminalRequest::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken { .. })`
+encodes as `(TerminalWorkerLifecycleRetraction (...))`. Canonical
+examples and round-trip tests use the operation heads.
 
 ## See also
 

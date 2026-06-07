@@ -12,73 +12,21 @@ viewer-pump bytes live in `terminal-cell` / `terminal`
 implementation code, not in Signal frames. Engine lifecycle/readiness
 traffic is the separate `signal-persona::SupervisionRequest` relation;
 do not call the component communication socket a supervision socket.
-Owner-only terminal session lifecycle commands live in the separate
-`owner-signal-terminal` contract. This ordinary surface can
+Meta-only terminal session lifecycle commands live in the separate
+terminal meta signal contract. This ordinary surface can
 read the session registry; it cannot create or retire sessions.
 
-## MUST IMPLEMENT — three-layer migration
+## Migration history — signal-frame operation heads (2026-06-07)
 
-This contract is migrating to the three-layer model affirmed
-2026-05-20 per
-`primary/reports/designer/246-v4-bundled-fix-deep-design-with-examples.md`
-and `primary/reports/designer/248-three-layer-changes-for-operators.md`.
+The public wire no longer carries `SignalVerb` classification words.
+Terminal requests travel as contract-local `signal-frame` operation
+heads. The worker-lifecycle stream keeps its typed open/event/close
+grammar through `operation SubscribeTerminalWorkerLifecycle(...) opens
+TerminalWorkerLifecycleStream` and the close operation
+`TerminalWorkerLifecycleRetraction`.
 
-**Layer 1 — Contract Operations on the wire (this crate).** Drop the
-SignalVerb prefixes entirely. The surface splits across four concern
-groups, each needing a contract-local verb:
-
-- Transport (`Connect`, `Input`, `Resize`, `Detach`, `Capture` —
-  verb-form names for the current `TerminalConnection`,
-  `TerminalInput`, `TerminalResize`, `TerminalDetachment`,
-  `TerminalCapture`);
-- Session discovery (`Query` for both `ListSessions` and
-  `ResolveSession`, payload distinguishes);
-- Prompt-pattern registry (`Register`, `Unregister`, `Query` for
-  `RegisterPromptPattern`, `UnregisterPromptPattern`,
-  `ListPromptPatterns`);
-- Input-gate / injection (`Acquire`, `Release`, `Inject` for
-  `AcquireInputGate`, `ReleaseInputGate`, `WriteInjection`);
-- Worker-lifecycle subscription (`Watch` for
-  `SubscribeTerminalWorkerLifecycle`, `Unwatch` for
-  `TerminalWorkerLifecycleRetraction`).
-
-Drop redundant `Terminal*` prefixes throughout — crate namespace
-supplies it.
-
-**Mandatory `Tap`/`Untap` for persona components.** Terminal
-is a persona component, so its observable surface is standardized.
-Add a mandatory `observable { … }` block; the macro injects
-`Tap(ObserverFilter)` / `Untap(TerminalObserverSubscriptionToken)`
-verbs for the standardized observer hook. The domain-specific
-`Watch`/`Unwatch` for worker lifecycle coexists without collision.
-
-**Layer 2 — Component Commands (terminal daemon).** The
-terminal daemon owns its typed Command enum (e.g.
-`TerminalCommand::AssertConnection`,
-`TerminalCommand::DeliverInput`,
-`TerminalCommand::MutateGeometry`,
-`TerminalCommand::AcquireInputGate`,
-`TerminalCommand::RecordInjection`,
-`TerminalCommand::ReadSessionList`,
-`TerminalCommand::OpenWorkerLifecycleStream`) plus a
-`CommandExecutor`.
-
-**Layer 3 — Sema classification (signal-sema).** Each Component
-Command projects to a payloadless `SemaOperation` class via
-`ToSemaOperation`.
-
-**Frame layer.** The dependency on `signal-core` shifts to
-`signal-frame`.
-
-References:
-- `primary/reports/designer/246-v4-bundled-fix-deep-design-with-examples.md`
-- `primary/reports/designer/248-three-layer-changes-for-operators.md`
-- `primary/skills/component-triad.md` §"Verbs come in three layers"
-- `primary/skills/contract-repo.md` §"Public contracts use contract-local operation verbs"
-
-**Note to remover:** when the refactor lands, remove this section and
-add a `## Migration history — three-layer model (2026-05-XX)`
-paragraph noting the shape change.
+This crate owns wire vocabulary and codecs only. Sema classification is
+daemon-side projection.
 
 There is one `signal_channel!` invocation in `src/lib.rs` declaring
 the `Terminal` channel. Terminal-owned introspection records (typed
@@ -235,7 +183,7 @@ Untap (mandatory observability)    -> Retract
 The wire form carries the contract-local verb only; the Sema class
 label is computed at observation publish time inside the daemon.
 Session lifecycle mutation is intentionally absent here; it belongs
-to `owner-signal-terminal`.
+to the terminal meta signal contract.
 
 ### Skeleton honesty (Unimplemented event)
 
@@ -296,7 +244,7 @@ its consumers.
 
 Terminal durable Sema rows that need to be inspectable outside
 `terminal` have typed record shapes in this contract. The
-component still owns its redb file, table declarations, reducers,
+component still owns its Sema store, table declarations, reducers,
 consistency model, and redaction policy. `persona-introspect` asks
 the running component for these records; it does not open
 `terminal`'s database directly.
@@ -316,9 +264,9 @@ terminal boundary.
 |---|---|
 | Every request/reply travels as a Signal frame. | `tests/round_trip.rs` length-prefixed frame tests per variant. |
 | Every `TerminalRequest` variant is a contract-local verb in verb form. | Round-trip tests assert each variant's NOTA head. Sema classification is daemon-side projection only. |
-| Session lifecycle mutation is owner-only, not part of the ordinary terminal contract. | Source scan: ordinary `TerminalRequest` has no `CreateSession` or `RetireSession`; those records live in `owner-signal-terminal`. |
+| Session lifecycle mutation is meta-only, not part of the ordinary terminal contract. | Source scan: ordinary `TerminalRequest` has no `CreateSession` or `RetireSession`; those records live in the terminal meta signal contract. |
 | Session lookup is a read; its Component Command projects to Sema `Match`. | `ListSessions` and `ResolveSession` return typed session rows or typed rejection from the daemon. |
-| Subscription close uses **Path A**: request-side `Retract TerminalWorkerLifecycleRetraction` carrying the token, plus reply-side `SubscriptionRetracted` ack echoing the token. | The `signal_channel!` declaration names `Retract TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken)` and a `stream TerminalWorkerLifecycleStream { close TerminalWorkerLifecycleRetraction; … }` block. The kernel grammar (`signal-frame::macros::validate`) rejects a `stream` block whose `close` is not a request-side `Retract` variant. Wire witnesses cover the retract request and the reply ack. |
+| Subscription close uses **Path A**: request-side `TerminalWorkerLifecycleRetraction` carrying the token, plus reply-side `SubscriptionRetracted` ack echoing the token. | The `signal_channel!` declaration names `operation TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken)` and a `stream TerminalWorkerLifecycleStream { close TerminalWorkerLifecycleRetraction; … }` block. The kernel grammar (`signal-frame::macros::validate`) rejects a stream block without a typed close operation. Wire witnesses cover the retract request and the reply ack. |
 | Wire enums contain no `Unknown` variant. | Source scan: only `InjectionRejectionReason::{UnknownTerminal,UnknownLease}` carry the word "Unknown" and those are positive domain rejections (see next row). |
 | Any record name containing the word `Unknown` represents a positive "entity not in our state" rejection, not a polling-shape escape hatch. | `InjectionRejectionReason::UnknownTerminal` and `UnknownLease` name "the terminal/lease id you sent isn't in our state" — closed, positively-defined failure modes, not lifecycle uncertainty placeholders. |
 | Skeleton honesty uses typed reasons, not free text. | `TerminalRequestUnimplemented.operation` is the closed `TerminalOperationKind`; `reason` is the closed `TerminalUnimplementedReason`. |
@@ -328,16 +276,15 @@ terminal boundary.
 | Round-trip witnesses cover every variant in NOTA. | `examples/canonical.nota` holds one canonical text example per request/reply/event variant; round-trip tests parse and re-emit each. |
 | No stringly-typed dispatch (`match s.as_str()`) for closed-set states. | All kind / reason / state fields are typed closed enums. |
 | Contract crate dependencies use a named API reference (branch or tag), not a raw revision pin. | `Cargo.toml` review: `signal-frame` is declared `git = "..."` with a named-branch shape; raw `rev = "..."` pins are not used. |
-| Runtime code stays out of the contract. | Source scan: no Kameo, Tokio, socket, or redb code. |
+| Runtime code stays out of the contract. | Source scan: no Kameo, Tokio, socket, or storage code. |
 
-## 7 · NOTA codec quirk on `signal_channel!` payload heads
+## 7 · NOTA codec shape on `signal_channel!` operation heads
 
-The `signal_channel!` macro emits a request variant's NOTA head as
-the **payload's record head**, not the Rust variant name. For
-example, `TerminalRequest::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken { .. })`
-encodes as `(TerminalWorkerLifecycleToken (...))`, not
-`(TerminalWorkerLifecycleRetraction ...)`. Canonical examples and
-round-trip tests carry the payload heads.
+The `signal_channel!` macro emits each request's NOTA head from the
+contract-local operation name. For example,
+`TerminalRequest::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken { .. })`
+encodes as `(TerminalWorkerLifecycleRetraction (...))`.
+Canonical examples and round-trip tests carry the operation heads.
 
 ## 8 · Versioning
 
@@ -357,8 +304,8 @@ branch/bookmark once that lane is declared.
 - No OS focus policy. That is `persona-system`.
 - No terminal-cell daemon. That is `terminal-cell`, behind
   `terminal`.
-- No owner-only terminal session lifecycle commands. Those are
-  `owner-signal-terminal`.
+- No meta-only terminal session lifecycle commands. Those are in the
+  terminal meta signal contract.
 - No prompt interpretation or delivery policy. That belongs in the
   caller and transport owner, not this contract.
 - No raw PTY / viewer byte data plane.
@@ -387,8 +334,8 @@ tests/
 - `~/primary/skills/component-triad.md` §"Verbs come in three layers".
 - `signal-persona-harness/ARCHITECTURE.md` — sibling contract using
   the same Path A subscription discipline.
-- `owner-signal-terminal/ARCHITECTURE.md` — owner-only
-  terminal session lifecycle mutation contract.
+- The terminal meta signal contract — meta-only terminal session
+  lifecycle mutation contract.
 - `signal-persona-system/ARCHITECTURE.md` and
   `signal-criome/ARCHITECTURE.md` — sibling contracts using the same
   Path A subscription discipline.

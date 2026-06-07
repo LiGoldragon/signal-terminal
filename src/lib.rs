@@ -14,7 +14,7 @@
 
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode, NotaEnum, NotaRecord, NotaTransparent};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
-use signal_core::signal_channel;
+use signal_frame::signal_channel;
 
 pub mod introspection;
 pub use introspection::*;
@@ -933,56 +933,60 @@ pub struct SubscriptionRetracted {
 
 signal_channel! {
     channel Terminal {
-        request TerminalRequest {
-            Assert TerminalConnection(TerminalConnection),
-            Assert TerminalInput(TerminalInput),
-            Mutate TerminalResize(TerminalResize),
-            Retract TerminalDetachment(TerminalDetachment),
-            Match TerminalCapture(TerminalCapture),
-            Assert RegisterPromptPattern(RegisterPromptPattern),
-            Retract UnregisterPromptPattern(UnregisterPromptPattern),
-            Match ListPromptPatterns(ListPromptPatterns),
-            Assert AcquireInputGate(AcquireInputGate),
-            Retract ReleaseInputGate(ReleaseInputGate),
-            Assert WriteInjection(WriteInjection),
-            Subscribe SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle) opens TerminalWorkerLifecycleStream,
-            Retract TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken),
-            Match ListSessions(ListSessions),
-            Match ResolveSession(ResolveSession),
-        }
-        reply TerminalReply {
-            TerminalReady(TerminalReady),
-            TerminalInputAccepted(TerminalInputAccepted),
-            TranscriptDelta(TranscriptDelta),
-            TerminalResized(TerminalResized),
-            TerminalCaptured(TerminalCaptured),
-            TerminalDetached(TerminalDetached),
-            TerminalExited(TerminalExited),
-            TerminalRejected(TerminalRejected),
-            PromptPatternRegistered(PromptPatternRegistered),
-            PromptPatternUnregistered(PromptPatternUnregistered),
-            PromptPatternList(PromptPatternList),
-            GateAcquired(GateAcquired),
-            GateBusy(GateBusy),
-            GateReleased(GateReleased),
-            InjectionAck(InjectionAck),
-            InjectionRejected(InjectionRejected),
-            TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
-            SubscriptionRetracted(SubscriptionRetracted),
-            SessionList(SessionList),
-            SessionResolved(SessionResolved),
-        }
-        event TerminalEvent {
-            TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent) belongs TerminalWorkerLifecycleStream,
-        }
-        stream TerminalWorkerLifecycleStream {
-            token TerminalWorkerLifecycleToken;
-            opened TerminalWorkerLifecycleSnapshot;
-            event TerminalWorkerLifecycleEvent;
-            close TerminalWorkerLifecycleRetraction;
-        }
+        operation TerminalConnection(TerminalConnection),
+        operation TerminalInput(TerminalInput),
+        operation TerminalResize(TerminalResize),
+        operation TerminalDetachment(TerminalDetachment),
+        operation TerminalCapture(TerminalCapture),
+        operation RegisterPromptPattern(RegisterPromptPattern),
+        operation UnregisterPromptPattern(UnregisterPromptPattern),
+        operation ListPromptPatterns(ListPromptPatterns),
+        operation AcquireInputGate(AcquireInputGate),
+        operation ReleaseInputGate(ReleaseInputGate),
+        operation WriteInjection(WriteInjection),
+        operation SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle) opens TerminalWorkerLifecycleStream,
+        operation TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken),
+        operation ListSessions(ListSessions),
+        operation ResolveSession(ResolveSession),
+    }
+    reply TerminalReply {
+        TerminalReady(TerminalReady),
+        TerminalInputAccepted(TerminalInputAccepted),
+        TranscriptDelta(TranscriptDelta),
+        TerminalResized(TerminalResized),
+        TerminalCaptured(TerminalCaptured),
+        TerminalDetached(TerminalDetached),
+        TerminalExited(TerminalExited),
+        TerminalRejected(TerminalRejected),
+        PromptPatternRegistered(PromptPatternRegistered),
+        PromptPatternUnregistered(PromptPatternUnregistered),
+        PromptPatternList(PromptPatternList),
+        GateAcquired(GateAcquired),
+        GateBusy(GateBusy),
+        GateReleased(GateReleased),
+        InjectionAck(InjectionAck),
+        InjectionRejected(InjectionRejected),
+        TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
+        SubscriptionRetracted(SubscriptionRetracted),
+        SessionList(SessionList),
+        SessionResolved(SessionResolved),
+    }
+    event TerminalEvent {
+        TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent) belongs TerminalWorkerLifecycleStream,
+    }
+    stream TerminalWorkerLifecycleStream {
+        token TerminalWorkerLifecycleToken;
+        opened TerminalWorkerLifecycleSnapshot;
+        event TerminalWorkerLifecycleEvent;
+        close TerminalWorkerLifecycleRetraction;
     }
 }
+
+pub type TerminalRequest = Operation;
+pub type TerminalFrame = Frame;
+pub type TerminalFrameBody = FrameBody;
+pub type TerminalRequestBuilder = RequestBuilder;
+pub type TerminalStreamKind = StreamKind;
 
 impl TerminalRequest {
     pub fn operation_kind(&self) -> TerminalOperationKind {
@@ -1007,111 +1011,6 @@ impl TerminalRequest {
             Self::ListSessions(_) => TerminalOperationKind::ListSessions,
             Self::ResolveSession(_) => TerminalOperationKind::ResolveSession,
         }
-    }
-}
-
-// Hand-written `From<Payload> for TerminalReply` impls per /176 §3.
-// Every reply variant carries a unique payload type, so the
-// conversions are unambiguous; the proc-macro deliberately does not
-// emit blanket From impls — this is the contract opting in.
-impl From<TerminalReady> for TerminalReply {
-    fn from(payload: TerminalReady) -> Self {
-        Self::TerminalReady(payload)
-    }
-}
-impl From<TerminalInputAccepted> for TerminalReply {
-    fn from(payload: TerminalInputAccepted) -> Self {
-        Self::TerminalInputAccepted(payload)
-    }
-}
-impl From<TranscriptDelta> for TerminalReply {
-    fn from(payload: TranscriptDelta) -> Self {
-        Self::TranscriptDelta(payload)
-    }
-}
-impl From<TerminalResized> for TerminalReply {
-    fn from(payload: TerminalResized) -> Self {
-        Self::TerminalResized(payload)
-    }
-}
-impl From<TerminalCaptured> for TerminalReply {
-    fn from(payload: TerminalCaptured) -> Self {
-        Self::TerminalCaptured(payload)
-    }
-}
-impl From<TerminalDetached> for TerminalReply {
-    fn from(payload: TerminalDetached) -> Self {
-        Self::TerminalDetached(payload)
-    }
-}
-impl From<TerminalExited> for TerminalReply {
-    fn from(payload: TerminalExited) -> Self {
-        Self::TerminalExited(payload)
-    }
-}
-impl From<TerminalRejected> for TerminalReply {
-    fn from(payload: TerminalRejected) -> Self {
-        Self::TerminalRejected(payload)
-    }
-}
-impl From<PromptPatternRegistered> for TerminalReply {
-    fn from(payload: PromptPatternRegistered) -> Self {
-        Self::PromptPatternRegistered(payload)
-    }
-}
-impl From<PromptPatternUnregistered> for TerminalReply {
-    fn from(payload: PromptPatternUnregistered) -> Self {
-        Self::PromptPatternUnregistered(payload)
-    }
-}
-impl From<PromptPatternList> for TerminalReply {
-    fn from(payload: PromptPatternList) -> Self {
-        Self::PromptPatternList(payload)
-    }
-}
-impl From<GateAcquired> for TerminalReply {
-    fn from(payload: GateAcquired) -> Self {
-        Self::GateAcquired(payload)
-    }
-}
-impl From<GateBusy> for TerminalReply {
-    fn from(payload: GateBusy) -> Self {
-        Self::GateBusy(payload)
-    }
-}
-impl From<GateReleased> for TerminalReply {
-    fn from(payload: GateReleased) -> Self {
-        Self::GateReleased(payload)
-    }
-}
-impl From<InjectionAck> for TerminalReply {
-    fn from(payload: InjectionAck) -> Self {
-        Self::InjectionAck(payload)
-    }
-}
-impl From<InjectionRejected> for TerminalReply {
-    fn from(payload: InjectionRejected) -> Self {
-        Self::InjectionRejected(payload)
-    }
-}
-impl From<TerminalWorkerLifecycleSnapshot> for TerminalReply {
-    fn from(payload: TerminalWorkerLifecycleSnapshot) -> Self {
-        Self::TerminalWorkerLifecycleSnapshot(payload)
-    }
-}
-impl From<SubscriptionRetracted> for TerminalReply {
-    fn from(payload: SubscriptionRetracted) -> Self {
-        Self::SubscriptionRetracted(payload)
-    }
-}
-impl From<SessionList> for TerminalReply {
-    fn from(payload: SessionList) -> Self {
-        Self::SessionList(payload)
-    }
-}
-impl From<SessionResolved> for TerminalReply {
-    fn from(payload: SessionResolved) -> Self {
-        Self::SessionResolved(payload)
     }
 }
 
@@ -1228,7 +1127,7 @@ pub struct TerminalDaemonConfiguration {
     pub supervision_socket_path: signal_persona::WirePath,
     /// chmod applied to the supervision socket after bind.
     pub supervision_socket_mode: signal_persona::SocketMode,
-    /// Path to the terminal supervisor's redb store file.
+    /// Path to the terminal supervisor's sema-engine store file.
     pub store_path: signal_persona::WirePath,
     /// The engine owner identity passed to the terminal supervisor.
     pub owner_identity: signal_persona_origin::OwnerIdentity,

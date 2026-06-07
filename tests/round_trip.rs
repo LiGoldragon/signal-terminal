@@ -1,7 +1,7 @@
 use nota_codec::{Decoder, Encoder, NotaDecode, NotaEncode};
-use signal_core::{
+use signal_frame::{
     ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
-    SignalVerb, StreamEventIdentifier, SubReply, SubscriptionTokenInner,
+    SignalOperationHeads, StreamEventIdentifier, SubReply, SubscriptionTokenInner,
 };
 use signal_terminal::{
     AcquireInputGate, GateAcquired, GateBusy, GateReleased, InjectionAck, InjectionRejected,
@@ -16,7 +16,7 @@ use signal_terminal::{
     TerminalGeneration, TerminalInput, TerminalInputAccepted, TerminalInputBytes, TerminalName,
     TerminalOperationKind, TerminalReady, TerminalRejected, TerminalRejectionReason, TerminalReply,
     TerminalRequest, TerminalResize, TerminalResized, TerminalRows, TerminalSequence,
-    TerminalTranscriptBytes, TerminalWorkerKind, TerminalWorkerLifecycle,
+    TerminalStreamKind, TerminalTranscriptBytes, TerminalWorkerKind, TerminalWorkerLifecycle,
     TerminalWorkerLifecycleEvent, TerminalWorkerLifecycleSnapshot, TerminalWorkerLifecycleToken,
     TerminalWorkerStopReason, TranscriptDelta, UnregisterPromptPattern, WriteInjection,
 };
@@ -60,7 +60,7 @@ fn stream_event() -> StreamEventIdentifier {
 }
 
 fn round_trip_request(request: TerminalRequest) -> TerminalRequest {
-    let expected_verb = request.signal_verb();
+    let expected = request.clone();
     let frame = Frame::new(FrameBody::Request {
         exchange: exchange(),
         request: request.into_request(),
@@ -68,10 +68,12 @@ fn round_trip_request(request: TerminalRequest) -> TerminalRequest {
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
-        FrameBody::Request { request, .. } => {
-            let operation = request.operations().head();
-            assert_eq!(operation.verb, expected_verb);
-            operation.payload.clone()
+        FrameBody::Request {
+            request: decoded_request,
+            ..
+        } => {
+            assert_eq!(decoded_request.payloads().head(), &expected);
+            decoded_request.payloads().head().clone()
         }
         other => panic!("expected request operation, got {other:?}"),
     }
@@ -80,17 +82,14 @@ fn round_trip_request(request: TerminalRequest) -> TerminalRequest {
 fn round_trip_reply(reply: TerminalReply) -> TerminalReply {
     let frame = Frame::new(FrameBody::Reply {
         exchange: exchange(),
-        reply: Reply::completed(NonEmpty::single(SubReply::Ok {
-            verb: SignalVerb::Assert,
-            payload: reply,
-        })),
+        reply: Reply::committed(NonEmpty::single(SubReply::Ok(reply))),
     });
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
         FrameBody::Reply { reply, .. } => match reply {
             Reply::Accepted { per_operation, .. } => match per_operation.into_head() {
-                SubReply::Ok { payload, .. } => payload,
+                SubReply::Ok(payload) => payload,
                 other => panic!("expected accepted reply payload, got {other:?}"),
             },
             other => panic!("expected accepted reply, got {other:?}"),
@@ -381,104 +380,48 @@ fn terminal_request_exposes_contract_owned_operation_kind() {
 }
 
 #[test]
-fn terminal_request_variants_declare_expected_signal_root_verbs() {
-    let cases = [
-        (
-            TerminalRequest::TerminalConnection(TerminalConnection {
-                terminal: terminal(),
-            }),
-            SignalVerb::Assert,
-        ),
-        (
-            TerminalRequest::TerminalInput(TerminalInput {
-                terminal: terminal(),
-                bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
-            }),
-            SignalVerb::Assert,
-        ),
-        (
-            TerminalRequest::TerminalResize(TerminalResize {
-                terminal: terminal(),
-                rows: TerminalRows::new(32),
-                columns: TerminalColumns::new(120),
-            }),
-            SignalVerb::Mutate,
-        ),
-        (
-            TerminalRequest::TerminalDetachment(TerminalDetachment {
-                terminal: terminal(),
-                reason: TerminalDetachmentReason::HumanRequested,
-            }),
-            SignalVerb::Retract,
-        ),
-        (
-            TerminalRequest::TerminalCapture(TerminalCapture {
-                terminal: terminal(),
-            }),
-            SignalVerb::Match,
-        ),
-        (
-            TerminalRequest::RegisterPromptPattern(RegisterPromptPattern {
-                terminal: terminal(),
-                pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(b"> ".to_vec())),
-            }),
-            SignalVerb::Assert,
-        ),
-        (
-            TerminalRequest::UnregisterPromptPattern(UnregisterPromptPattern {
-                terminal: terminal(),
-                pattern_id: prompt_pattern_identifier(),
-            }),
-            SignalVerb::Retract,
-        ),
-        (
-            TerminalRequest::ListPromptPatterns(ListPromptPatterns {
-                terminal: terminal(),
-            }),
-            SignalVerb::Match,
-        ),
-        (
-            TerminalRequest::AcquireInputGate(AcquireInputGate {
-                terminal: terminal(),
-                reason: InputGateReason::new("message delivery"),
-                prompt_pattern_identifier: Some(prompt_pattern_identifier()),
-            }),
-            SignalVerb::Assert,
-        ),
-        (
-            TerminalRequest::ReleaseInputGate(ReleaseInputGate {
-                terminal: terminal(),
-                lease: input_gate_lease(),
-            }),
-            SignalVerb::Retract,
-        ),
-        (
-            TerminalRequest::WriteInjection(WriteInjection {
-                terminal: terminal(),
-                lease: input_gate_lease(),
-                bytes: TerminalInputBytes::new(b"hello\r".to_vec()),
-            }),
-            SignalVerb::Assert,
-        ),
-        (
-            TerminalRequest::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle {
-                terminal: terminal(),
-            }),
-            SignalVerb::Subscribe,
-        ),
-        (
-            TerminalRequest::ListSessions(ListSessions {}),
-            SignalVerb::Match,
-        ),
-        (
-            TerminalRequest::ResolveSession(ResolveSession { name: terminal() }),
-            SignalVerb::Match,
-        ),
-    ];
+fn terminal_request_heads_are_contract_local_operations() {
+    assert_eq!(
+        <TerminalRequest as SignalOperationHeads>::HEADS,
+        &[
+            "TerminalConnection",
+            "TerminalInput",
+            "TerminalResize",
+            "TerminalDetachment",
+            "TerminalCapture",
+            "RegisterPromptPattern",
+            "UnregisterPromptPattern",
+            "ListPromptPatterns",
+            "AcquireInputGate",
+            "ReleaseInputGate",
+            "WriteInjection",
+            "SubscribeTerminalWorkerLifecycle",
+            "TerminalWorkerLifecycleRetraction",
+            "ListSessions",
+            "ResolveSession",
+        ]
+    );
+}
 
-    for (request, verb) in cases {
-        assert_eq!(request.signal_verb(), verb);
-    }
+#[test]
+fn terminal_worker_lifecycle_operations_name_their_stream() {
+    let watch =
+        TerminalRequest::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle {
+            terminal: terminal(),
+        });
+    let unwatch =
+        TerminalRequest::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken {
+            terminal: terminal(),
+        });
+
+    assert_eq!(
+        watch.opened_stream(),
+        Some(TerminalStreamKind::TerminalWorkerLifecycleStream)
+    );
+    assert_eq!(
+        unwatch.closed_stream(),
+        Some(TerminalStreamKind::TerminalWorkerLifecycleStream)
+    );
 }
 
 #[test]
@@ -826,7 +769,7 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
         terminal_socket_mode: SocketMode::new(0o600),
         supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
         supervision_socket_mode: SocketMode::new(0o600),
-        store_path: WirePath::new("/var/lib/persona/X/terminal.redb"),
+        store_path: WirePath::new("/var/lib/persona/X/terminal.sema"),
         owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
@@ -854,7 +797,7 @@ fn terminal_daemon_configuration_round_trips_through_rkyv() {
         terminal_socket_mode: SocketMode::new(0o600),
         supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
         supervision_socket_mode: SocketMode::new(0o600),
-        store_path: WirePath::new("/var/lib/persona/X/terminal.redb"),
+        store_path: WirePath::new("/var/lib/persona/X/terminal.sema"),
         owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
