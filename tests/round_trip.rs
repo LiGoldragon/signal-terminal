@@ -767,6 +767,8 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
     let configuration = TerminalDaemonConfiguration {
         terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock"),
         terminal_socket_mode: SocketMode::new(0o600),
+        meta_terminal_socket_path: WirePath::new("/run/persona/X/meta-terminal.sock"),
+        meta_terminal_socket_mode: SocketMode::new(0o600),
         supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
         supervision_socket_mode: SocketMode::new(0o600),
         store_path: WirePath::new("/var/lib/persona/X/terminal.sema"),
@@ -790,6 +792,8 @@ fn terminal_daemon_configuration_round_trips_through_rkyv() {
     let configuration = TerminalDaemonConfiguration {
         terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock"),
         terminal_socket_mode: SocketMode::new(0o600),
+        meta_terminal_socket_path: WirePath::new("/run/persona/X/meta-terminal.sock"),
+        meta_terminal_socket_mode: SocketMode::new(0o600),
         supervision_socket_path: WirePath::new("/run/persona/X/terminal-supervision.sock"),
         supervision_socket_mode: SocketMode::new(0o600),
         store_path: WirePath::new("/var/lib/persona/X/terminal.sema"),

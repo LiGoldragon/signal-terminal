@@ -15,6 +15,10 @@ do not call the component communication socket a supervision socket.
 Meta-only terminal session lifecycle commands live in the separate
 terminal meta signal contract. This ordinary surface can
 read the session registry; it cannot create or retire sessions.
+The binary `TerminalDaemonConfiguration` carried here includes ordinary,
+meta, and supervision socket paths because it is the generated process
+launch record; those fields do not turn meta lifecycle mutation into
+ordinary signal traffic.
 
 ## Migration history — signal-frame operation heads (2026-06-07)
 

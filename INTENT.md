@@ -110,6 +110,10 @@ records; it never opens `terminal`'s database directly.
 
 - This crate carries only typed wire vocabulary, explicit NOTA text
   codecs for CLI/tooling projection, and round-trip witnesses.
+- The daemon configuration record may carry ordinary, meta, and
+  supervision socket locations for the generated terminal process; that
+  launch record is binary configuration, not a public working operation
+  and not authority to mutate sessions through this ordinary contract.
 - No runtime code: no actors, no tokio, no socket binding, no storage, no
   terminal-cell transport logic.
 - Contract types derive NOTA in this crate. Clients do not carry shadow

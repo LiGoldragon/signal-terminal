@@ -1331,6 +1331,10 @@ pub struct TerminalDaemonConfiguration {
     pub terminal_socket_path: signal_engine_management::WirePath,
     /// chmod applied to the terminal socket after bind.
     pub terminal_socket_mode: signal_engine_management::SocketMode,
+    /// Where the supervisor binds its privileged meta terminal Unix socket.
+    pub meta_terminal_socket_path: signal_engine_management::WirePath,
+    /// chmod applied to the meta terminal socket after bind.
+    pub meta_terminal_socket_mode: signal_engine_management::SocketMode,
     /// Where the supervisor binds its supervision Unix socket.
     pub supervision_socket_path: signal_engine_management::WirePath,
     /// chmod applied to the supervision socket after bind.
