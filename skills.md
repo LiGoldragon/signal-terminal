@@ -112,7 +112,9 @@ Signal endpoint.
 - **Round trips cover every variant.** rkyv length-prefixed frame
   round trips in `tests/round_trip.rs`; canonical NOTA examples in
   `examples/canonical.nota` with a parser test. Introspection
-  records are exercised in `tests/introspection.rs`.
+  records are exercised in `tests/introspection.rs`. The manifest enables
+  the crate-local `nota-text` feature by default and maps it to
+  `signal-frame/nota-text` for those text witnesses.
 - **Pin upstream contracts via a named API reference.** Cargo deps
   declare `git = "..."` with a named branch/bookmark, never raw
   `rev = "..."`.

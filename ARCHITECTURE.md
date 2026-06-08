@@ -28,6 +28,11 @@ TerminalWorkerLifecycleStream` and the close operation
 This crate owns wire vocabulary and codecs only. Sema classification is
 daemon-side projection.
 
+Because this contract still owns NOTA round-trip witnesses, it explicitly
+enables `signal-frame/nota-text` through its own default `nota-text`
+feature instead of relying on text codecs in the frame kernel's default
+build.
+
 There is one `signal_channel!` invocation in `src/lib.rs` declaring
 the `Terminal` channel. Terminal-owned introspection records (typed
 projections of durable Sema rows for `persona-introspect`) live in
