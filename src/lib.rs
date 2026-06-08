@@ -1317,6 +1317,10 @@ impl From<ResolveSession> for TerminalRequest {
 
 /// Startup configuration for `terminal-supervisor`.
 ///
+/// The generated process needs one binary configuration carrying its
+/// ordinary, meta, and supervision socket locations before it can bind any
+/// listener. This launch record is not a public terminal operation.
+///
 /// Replaces the previous `--socket`, `--store`,
 /// `PERSONA_SOCKET_PATH`, `TERMINAL_STORE`,
 /// `PERSONA_STATE_PATH`, `PERSONA_SOCKET_MODE`,
