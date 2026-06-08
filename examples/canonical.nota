@@ -1,38 +1,45 @@
 ;; Canonical NOTA examples for signal-terminal.
 ;;
 ;; One example per request variant, reply variant, and stream event
-;; variant. The text-form head is the contract variant name and the
-;; payload record fields are nested under that variant.
+;; variant, in the schema-derived wire form (schema/lib.schema ->
+;; schema-rust-next -> generated Input/Output/TerminalEvent). The text-form
+;; head is the contract variant name; single-field payload records flatten
+;; through their newtype, so a one-field operation head carries its inner
+;; value directly.
 ;;
-;; The Path A lifecycle (request retract + reply ack) is the
-;; load-bearing close shape; both the `TerminalWorkerLifecycleToken`
-;; (request side) and `SubscriptionRetracted` (reply side) appear
-;; below.
+;; The Path A lifecycle (request retract + reply ack) is the load-bearing
+;; close shape; both the request-side retraction (carrying the
+;; TerminalWorkerLifecycleToken) and the reply-side SubscriptionRetracted ack
+;; appear below.
 ;;
-;; Round-trip witness: tests/canonical_examples.rs parses each record
-;; and asserts the re-encoded text equals the canonical form.
+;; Round-trip witness: tests/canonical_examples.rs parses each record and
+;; asserts the re-encoded text equals the canonical form.
 
-;; ─── Requests ─────────────────────────────────────────────────────
+;; Requests
 
-(TerminalConnection ([operator]))
+(TerminalConnection [operator])
 (TerminalInput ([operator] [104 101 108 108 111]))
 (TerminalResize ([operator] 24 80))
 (TerminalDetachment ([operator] HumanRequested))
-(TerminalCapture ([operator]))
-(ResolveSession ([operator]))
+(TerminalCapture [operator])
+(ResolveSession [operator])
 (AcquireInputGate ([operator] [send router-delivered command] None))
-(ReleaseInputGate ([operator] (42)))
-(WriteInjection ([operator] (42) [104 101 108 108 111]))
-(SubscribeTerminalWorkerLifecycle ([operator]))
-(TerminalWorkerLifecycleRetraction ([operator]))
+(ReleaseInputGate ([operator] 42))
+(WriteInjection ([operator] 42 [104 101 108 108 111]))
+(SubscribeTerminalWorkerLifecycle [operator])
+(TerminalWorkerLifecycleRetraction [operator])
 
-;; ─── Replies ──────────────────────────────────────────────────────
+;; Replies
 
 (TerminalReady ([operator] 1))
 (TerminalInputAccepted ([operator] 1))
-(GateAcquired ([operator] (42) (Clean)))
+(GateAcquired ([operator] 42 Clean))
 (GateBusy ([operator] 41))
 (InjectionAck ([operator] 1 7))
 (InjectionRejected ([operator] UnknownTerminal))
-(SubscriptionRetracted (([operator])))
+(SubscriptionRetracted [operator])
 (SessionResolved ([operator] [/run/persona/terminal/sessions/operator/data.sock]))
+
+;; Stream event
+
+(Event (TerminalWorkerLifecycleEvent ([operator] (Started ViewerFanout))))

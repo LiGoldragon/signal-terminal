@@ -19,15 +19,18 @@ the terminal meta signal contract.
 ## Why this repo exists
 
 `signal-terminal` is the **ordinary peer-callable wire contract** for
-the `terminal` daemon. It carries the terminal transport control
-vocabulary that persona components needing terminal work (today
-`harness` and router delivery adapters) exchange with `terminal`. The
-raw attached-viewer byte plane stays OUTSIDE this contract — PTY bytes,
+the `terminal` daemon, derived from `schema/lib.schema` through
+schema-rust-next. It carries the terminal transport control vocabulary
+that persona components needing terminal work (today `harness` and
+router delivery adapters) exchange with `terminal`. The raw
+attached-viewer byte plane stays OUTSIDE this contract — PTY bytes,
 socket bytes, and viewer-pump bytes live in `terminal-cell`/`terminal`
 implementation code, on a separate data socket, never in Signal frames.
-This ordinary surface can read the session registry; it cannot create or
-retire sessions — those meta-only commands live in the terminal meta
-signal contract.
+The component has exactly two Signal contracts: this ordinary working
+contract and the separate terminal meta signal contract. This ordinary
+surface can read the session registry; it cannot create or retire
+sessions — those meta-only commands live in the terminal meta signal
+contract.
 
 ## The channel shape
 
@@ -48,9 +51,12 @@ observer hook:
   `TerminalWorkerLifecycleStream`, plus the mandatory `Tap`/`Untap`
   observer hook.
 
-The wire vocabulary is contract-local — the daemon lowers these public
-operations into component-local commands; Sema classification happens at
-observation publish time, not on the wire.
+The wire vocabulary is contract-local and schema-derived — the daemon
+lowers these public operations into component-local commands; Sema
+classification happens at observation publish time, not on the wire.
+Because the contract owns a worker-lifecycle stream, the generated
+envelope is `signal_frame::StreamingFrame<Input, Output, TerminalEvent>`,
+and the `Output` root carries an `Event(TerminalEvent)` variant.
 
 ## Channels are closed, boundaries are named
 
@@ -80,9 +86,15 @@ contract-local operation verbs":
 - Reply success variants name the concrete outcome the daemon produced.
 - Payload record names drop redundant `Terminal*` prefixes where the
   crate namespace already supplies them.
-- A valid request whose runtime behavior is not built yet returns
-  `TerminalRequestUnimplemented` with a typed reason, never free-text
-  error or a panic.
+- The enum grammar admits unit and single-payload variants only; struct
+  and tuple variants are remodeled (e.g. `TerminalExitStatus`,
+  `PromptState::Dirty`, `TerminalWorkerLifecycle::Stopped` over a typed
+  `TerminalWorkerStop`). Byte fields are `(Vec Integer)` — one integer
+  per byte — since the schema primitive set is `String`/`Integer`/`Boolean`.
+- A skeleton-honesty reply for accepted-but-unimplemented requests is a
+  documented possible feature (see `ARCHITECTURE.md` §"Possible features"),
+  not present in the wire today; the `Output` root carries the working
+  replies plus `Event(TerminalEvent)`.
 
 ## Three-layer model
 
@@ -108,22 +120,44 @@ records; it never opens `terminal`'s database directly.
 
 ## Constraints
 
-- This crate carries only typed wire vocabulary, explicit NOTA text
-  codecs for CLI/tooling projection, and round-trip witnesses.
+- `schema/lib.schema` is the source of truth. The checked-in generated
+  `src/schema/lib.rs` is a freshness-checked schema-rust-next artifact
+  (`build.rs` runs `expect_fresh()`), not handwritten vocabulary.
+- This crate carries only typed wire vocabulary, the generated rkyv and
+  NOTA codecs, the contract-local socket/owner helper types, and
+  round-trip witnesses.
+- The socket/owner helper vocabulary (`WirePath`, `SocketMode`,
+  `SystemPrincipal`, `UnixUserIdentifier`, `OwnerIdentity`) is declared
+  locally in the schema — no `signal-engine-management` or
+  `signal-persona-origin` imports.
 - The daemon configuration record may carry ordinary, meta, and
   supervision socket locations for the generated terminal process; that
   launch record is binary configuration, not a public working operation
   and not authority to mutate sessions through this ordinary contract.
 - No runtime code: no actors, no tokio, no socket binding, no storage, no
   terminal-cell transport logic.
-- Contract types derive NOTA in this crate. Clients do not carry shadow
-  types that re-derive the text surface.
+- The generated NOTA traits and the hand-written introspection NOTA
+  derives are gated behind the default `nota-text` feature, which also
+  enables `signal-frame/nota-text` and the optional `nota-next` dependency.
+  Clients do not carry shadow types that re-derive the text surface.
 - Every request, reply, and event variant round-trips through both rkyv
   frames and NOTA text; the full subscribe/event/retract/ack lifecycle
   is witnessed.
 - This contract carries no raw PTY / viewer byte data plane.
 - Wire dependency pins use named branches or tags, not raw revision
   hashes.
+
+## Code map
+
+```text
+build.rs                — schema-rust-next ContractCrateBuild::expect_fresh
+schema/lib.schema       — authored source of truth for Input, Output, the
+                          TerminalEvent stream, and every payload record
+src/schema/lib.rs       — generated schema-rust-next WireContract artifact
+src/lib.rs              — re-export + contract-local methods on generated nouns
+src/introspection.rs    — hand-written terminal inspectable-state records
+tests/                  — streaming-frame + NOTA round-trip and boundary witnesses
+```
 
 ## Non-ownership
 

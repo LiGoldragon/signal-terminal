@@ -1,0 +1,131 @@
+;; signal-terminal — ordinary working wire contract for Persona terminal transport control.
+;; Wire-only: schema-emitted Input/Output/Event roots + rkyv + optional NOTA codec on the
+;; signal-frame streaming envelope. Runtime, storage, and the PTY/viewer raw byte plane live
+;; in the terminal daemon and terminal-cell, never here. SELF-CONTAINED VOCABULARY: socket/owner
+;; helper types are declared locally (no signal-engine-management / signal-persona-origin imports).
+
+[(TerminalConnection TerminalConnection)
+ (TerminalInput TerminalInput)
+ (TerminalResize TerminalResize)
+ (TerminalDetachment TerminalDetachment)
+ (TerminalCapture TerminalCapture)
+ (RegisterPromptPattern RegisterPromptPattern)
+ (UnregisterPromptPattern UnregisterPromptPattern)
+ (ListPromptPatterns ListPromptPatterns)
+ (AcquireInputGate AcquireInputGate)
+ (ReleaseInputGate ReleaseInputGate)
+ (WriteInjection WriteInjection)
+ (SubscribeTerminalWorkerLifecycle SubscribeTerminalWorkerLifecycle opens TerminalWorkerLifecycleStream)
+ (TerminalWorkerLifecycleRetraction TerminalWorkerLifecycleToken)
+ (ListSessions ListSessions)
+ (ResolveSession ResolveSession)]
+[(TerminalReady TerminalReady)
+ (TerminalInputAccepted TerminalInputAccepted)
+ (TranscriptDelta TranscriptDelta)
+ (TerminalResized TerminalResized)
+ (TerminalCaptured TerminalCaptured)
+ (TerminalDetached TerminalDetached)
+ (TerminalExited TerminalExited)
+ (TerminalRejected TerminalRejected)
+ (PromptPatternRegistered PromptPatternRegistered)
+ (PromptPatternUnregistered PromptPatternUnregistered)
+ (PromptPatternList PromptPatternList)
+ (GateAcquired GateAcquired)
+ (GateBusy GateBusy)
+ (GateReleased GateReleased)
+ (InjectionAck InjectionAck)
+ (InjectionRejected InjectionRejected)
+ (TerminalWorkerLifecycleSnapshot TerminalWorkerLifecycleSnapshot)
+ (SubscriptionRetracted SubscriptionRetracted)
+ (SessionList SessionList)
+ (SessionResolved SessionResolved)
+ (Event TerminalEvent)]
+{
+  TerminalName { value String }
+  TerminalGeneration { value Integer }
+  TerminalSequence { value Integer }
+  TerminalByteCount { value Integer }
+  TerminalRows { value Integer }
+  TerminalColumns { value Integer }
+  TerminalInputBytes { value (Vec Integer) }
+  TerminalTranscriptBytes { value (Vec Integer) }
+  PromptPatternIdentifier { value String }
+  PromptPatternBytes { value (Vec Integer) }
+  InputGateReason { value String }
+  InputGateLeaseIdentifier { value Integer }
+  WirePath { value String }
+  SocketMode { value Integer }
+  SystemPrincipal { value String }
+  UnixUserIdentifier { value Integer }
+  ExitCode { value Integer }
+  TerminalSignalNumber { value Integer }
+  WorkerFailureDetail { value String }
+
+  OwnerIdentity [(UnixUser UnixUserIdentifier) (System SystemPrincipal)]
+  TerminalDetachmentReason [HumanRequested HarnessStopped ViewerReplaced]
+  TerminalRejectionReason [NotConnected InputRejected ResizeRejected CaptureRejected TransportFailed]
+  InjectionRejectionReason [UnknownTerminal UnknownLease GateNotHeld DirtyPrompt TransportFailed]
+  TerminalExitStatus [(Exited ExitCode) (Signaled TerminalSignalNumber) StatusUnavailable]
+  PromptPattern [(LiteralSuffix PromptPatternBytes) (RegexSuffix PromptPatternBytes)]
+  PromptState [NotChecked Clean (Dirty TerminalByteCount)]
+  InputGateLease { id InputGateLeaseIdentifier }
+  TerminalWorkerKind [InputWriter ViewerFanout TranscriptScriber OutputReader ChildExitWatcher SocketAcceptLoop AttachConnectionPump]
+  TerminalWorkerStopReason [InputCommandChannelClosed (InputWriteFailed WorkerFailureDetail) OutputCommandChannelClosed TranscriptNoticeChannelClosed OutputReaderFinished (OutputReadFailed WorkerFailureDetail) OutputPortClosed (ChildExited WorkerFailureDetail) (ChildWaitFailed WorkerFailureDetail) (SocketAcceptFailed WorkerFailureDetail) AttachConnectionClosed (AttachConnectionFailed WorkerFailureDetail)]
+  TerminalWorkerStop { worker TerminalWorkerKind reason TerminalWorkerStopReason }
+  TerminalWorkerLifecycle [(Started TerminalWorkerKind) (Stopped TerminalWorkerStop)]
+  TerminalOperationKind [TerminalConnection TerminalInput TerminalResize TerminalDetachment TerminalCapture RegisterPromptPattern UnregisterPromptPattern ListPromptPatterns AcquireInputGate ReleaseInputGate WriteInjection SubscribeTerminalWorkerLifecycle TerminalWorkerLifecycleRetraction ListSessions ResolveSession]
+
+  TerminalConnection { terminal TerminalName }
+  TerminalInput { terminal TerminalName bytes TerminalInputBytes }
+  TerminalResize { terminal TerminalName rows TerminalRows columns TerminalColumns }
+  TerminalDetachment { terminal TerminalName reason TerminalDetachmentReason }
+  TerminalCapture { terminal TerminalName }
+  RegisterPromptPattern { terminal TerminalName pattern PromptPattern }
+  UnregisterPromptPattern { terminal TerminalName pattern_id PromptPatternIdentifier }
+  ListPromptPatterns { terminal TerminalName }
+  AcquireInputGate { terminal TerminalName reason InputGateReason prompt_pattern_identifier (Optional PromptPatternIdentifier) }
+  ReleaseInputGate { terminal TerminalName lease InputGateLease }
+  WriteInjection { terminal TerminalName lease InputGateLease bytes TerminalInputBytes }
+  SubscribeTerminalWorkerLifecycle { terminal TerminalName }
+  TerminalWorkerLifecycleToken { terminal TerminalName }
+  ListSessions { }
+  ResolveSession { name TerminalName }
+
+  TerminalReady { terminal TerminalName generation TerminalGeneration }
+  TerminalInputAccepted { terminal TerminalName generation TerminalGeneration }
+  TranscriptDelta { terminal TerminalName sequence TerminalSequence bytes TerminalTranscriptBytes }
+  TerminalResized { terminal TerminalName rows TerminalRows columns TerminalColumns generation TerminalGeneration }
+  TerminalCaptured { terminal TerminalName generation TerminalGeneration bytes TerminalTranscriptBytes }
+  TerminalDetached { terminal TerminalName generation TerminalGeneration reason TerminalDetachmentReason }
+  TerminalExited { terminal TerminalName generation TerminalGeneration status TerminalExitStatus }
+  TerminalRejected { terminal TerminalName reason TerminalRejectionReason }
+  PromptPatternRegistered { terminal TerminalName pattern_id PromptPatternIdentifier }
+  PromptPatternUnregistered { terminal TerminalName pattern_id PromptPatternIdentifier }
+  PromptPatternEntry { pattern_id PromptPatternIdentifier pattern PromptPattern }
+  PromptPatternList { terminal TerminalName entries (Vec PromptPatternEntry) }
+  GateAcquired { terminal TerminalName lease InputGateLease prompt_state PromptState }
+  GateBusy { terminal TerminalName current_holder InputGateLeaseIdentifier }
+  GateReleased { terminal TerminalName lease InputGateLease cached_human_bytes TerminalByteCount }
+  InjectionAck { terminal TerminalName generation TerminalGeneration sequence TerminalSequence }
+  InjectionRejected { terminal TerminalName reason InjectionRejectionReason }
+  TerminalWorkerLifecycleSnapshot { terminal TerminalName observations (Vec TerminalWorkerLifecycle) }
+  TerminalWorkerLifecycleEvent { terminal TerminalName observation TerminalWorkerLifecycle }
+  SubscriptionRetracted { token TerminalWorkerLifecycleToken }
+  SessionEntry { name TerminalName data_socket_path WirePath }
+  SessionList { entries (Vec SessionEntry) }
+  SessionResolved { name TerminalName data_socket_path WirePath }
+
+  TerminalEvent [(TerminalWorkerLifecycleEvent TerminalWorkerLifecycleEvent belongs TerminalWorkerLifecycleStream)]
+  TerminalWorkerLifecycleStream (Stream { token TerminalWorkerLifecycleToken opened TerminalWorkerLifecycleSnapshot event TerminalEvent close TerminalWorkerLifecycleToken })
+
+  TerminalDaemonConfiguration {
+    terminal_socket_path WirePath
+    terminal_socket_mode SocketMode
+    meta_terminal_socket_path WirePath
+    meta_terminal_socket_mode SocketMode
+    supervision_socket_path WirePath
+    supervision_socket_mode SocketMode
+    store_path WirePath
+    owner_identity OwnerIdentity
+  }
+}

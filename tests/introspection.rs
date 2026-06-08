@@ -1,16 +1,16 @@
 use nota_next::{NotaDecode, NotaEncode, NotaSource};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 use signal_terminal::{
-    TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState, TerminalEventObservation,
-    TerminalGeneration, TerminalInputAccepted, TerminalIntrospectionSnapshot, TerminalName,
-    TerminalObservationSequence, TerminalOperationKind, TerminalReply,
-    TerminalSessionArchiveObservation, TerminalSessionArchiveState,
+    Output, TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState,
+    TerminalEventObservation, TerminalGeneration, TerminalInputAccepted,
+    TerminalIntrospectionSnapshot, TerminalName, TerminalObservationSequence,
+    TerminalOperationKind, TerminalSessionArchiveObservation, TerminalSessionArchiveState,
     TerminalSessionHealthObservation, TerminalSessionObservation, TerminalSessionState,
     TerminalViewerAttachmentObservation, TerminalViewerAttachmentState,
 };
 
 fn terminal() -> TerminalName {
-    TerminalName::new("operator")
+    TerminalName::new("operator".to_owned())
 }
 
 fn round_trip_archive<T>(value: T) -> T
@@ -110,7 +110,7 @@ fn terminal_delivery_attempt_observation_round_trips() {
 
 #[test]
 fn terminal_event_observation_round_trips() {
-    let event = TerminalReply::from(TerminalInputAccepted {
+    let event = Output::from(TerminalInputAccepted {
         terminal: terminal(),
         generation: TerminalGeneration::new(3),
     });
@@ -143,7 +143,7 @@ fn terminal_session_health_observation_round_trips() {
     );
 
     assert_eq!(round_trip_archive(observation.clone()), observation);
-    assert_eq!(observation.generation().into_u64(), 2);
+    assert_eq!(observation.generation().clone().into_u64(), 2);
 }
 
 #[test]
