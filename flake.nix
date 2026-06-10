@@ -20,11 +20,12 @@
           sha256 = "sha256-gh/xTkxKHL4eiRXzWv8KP7vfjSk61Iq48x47BEDFgfk=";
         };
         craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
-        # Include `examples/` so canonical NOTA examples files are present
-        # at build time for `include_str!` in `tests/canonical_examples.rs`.
+        # Include generated-contract inputs that Cargo's source filter does
+        # not know about.
         examplesFilter = path: _type: builtins.match ".*/examples(/.*)?$" path != null;
+        schemaFilter = path: _type: builtins.match ".*/schema(/.*)?$" path != null;
         sourceFilter = path: type:
-          (craneLib.filterCargoSources path type) || (examplesFilter path type);
+          (craneLib.filterCargoSources path type) || (examplesFilter path type) || (schemaFilter path type);
         src = pkgs.lib.cleanSourceWith {
           src = ./.;
           filter = sourceFilter;

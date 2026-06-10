@@ -5,6 +5,7 @@
 //! "blunt test names" convention. The wire form is the schema-rust-next
 //! emission on the `signal_frame::StreamingFrame` envelope.
 
+#[cfg(feature = "nota-text")]
 use nota_next::{NotaDecode, NotaEncode, NotaSource};
 use signal_frame::{
     ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
@@ -126,6 +127,7 @@ fn round_trip_event(event: TerminalEvent) -> TerminalEvent {
     }
 }
 
+#[cfg(feature = "nota-text")]
 fn round_trip_nota<T>(value: T, expected: &str)
 where
     T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
@@ -424,6 +426,7 @@ fn input_variants_declare_contract_local_operation_heads() {
     );
 }
 
+#[cfg(feature = "nota-text")]
 #[test]
 fn remodeled_enum_variants_round_trip_through_nota_text() {
     round_trip_nota(
@@ -432,7 +435,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
             generation: TerminalGeneration::new(2),
             status: TerminalExitStatus::Exited(ExitCode::new(0)),
         }),
-        "(TerminalExited ([operator] 2 (Exited 0)))",
+        "(TerminalExited (operator 2 (Exited 0)))",
     );
     round_trip_nota(
         Output::TerminalExited(TerminalExited {
@@ -440,7 +443,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
             generation: TerminalGeneration::new(2),
             status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
         }),
-        "(TerminalExited ([operator] 2 (Signaled 9)))",
+        "(TerminalExited (operator 2 (Signaled 9)))",
     );
     round_trip_nota(
         Output::GateAcquired(GateAcquired {
@@ -448,7 +451,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
             lease: input_gate_lease(),
             prompt_state: PromptState::Dirty(TerminalByteCount::new(3)),
         }),
-        "(GateAcquired ([operator] 42 (Dirty 3)))",
+        "(GateAcquired (operator 42 (Dirty 3)))",
     );
     round_trip_nota(
         TerminalWorkerLifecycle::Stopped(TerminalWorkerStop {
@@ -461,6 +464,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
     );
 }
 
+#[cfg(feature = "nota-text")]
 #[test]
 fn byte_fields_carry_one_integer_per_byte_on_the_wire() {
     round_trip_nota(
@@ -468,15 +472,17 @@ fn byte_fields_carry_one_integer_per_byte_on_the_wire() {
             terminal: terminal(),
             bytes: input_bytes(),
         }),
-        "(TerminalInput ([operator] [104 101 108 108 111]))",
+        "(TerminalInput (operator [104 101 108 108 111]))",
     );
 }
 
+#[cfg(feature = "nota-text")]
 #[test]
 fn operation_kind_round_trips_through_nota_text() {
     round_trip_nota(TerminalOperationKind::WriteInjection, "WriteInjection");
 }
 
+#[cfg(feature = "nota-text")]
 #[test]
 fn terminal_daemon_configuration_round_trips_through_nota_text() {
     let configuration = TerminalDaemonConfiguration {
@@ -498,7 +504,7 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
         .expect("decode configuration");
 
     assert_eq!(recovered, configuration);
-    assert!(text.contains("[/run/persona/X/terminal.sock]"));
+    assert!(text.contains("/run/persona/X/terminal.sock"));
     assert!(text.contains("(UnixUser 1000)"));
 }
 

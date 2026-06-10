@@ -17,29 +17,29 @@
 
 ;; Requests
 
-(TerminalConnection [operator])
-(TerminalInput ([operator] [104 101 108 108 111]))
-(TerminalResize ([operator] 24 80))
-(TerminalDetachment ([operator] HumanRequested))
-(TerminalCapture [operator])
-(ResolveSession [operator])
-(AcquireInputGate ([operator] [send router-delivered command] None))
-(ReleaseInputGate ([operator] 42))
-(WriteInjection ([operator] 42 [104 101 108 108 111]))
-(SubscribeTerminalWorkerLifecycle [operator])
-(TerminalWorkerLifecycleRetraction [operator])
+(TerminalConnection operator)
+(TerminalInput (operator [104 101 108 108 111]))
+(TerminalResize (operator 24 80))
+(TerminalDetachment (operator HumanRequested))
+(TerminalCapture operator)
+(ResolveSession operator)
+(AcquireInputGate (operator [send router-delivered command] None))
+(ReleaseInputGate (operator 42))
+(WriteInjection (operator 42 [104 101 108 108 111]))
+(SubscribeTerminalWorkerLifecycle operator)
+(TerminalWorkerLifecycleRetraction operator)
 
 ;; Replies
 
-(TerminalReady ([operator] 1))
-(TerminalInputAccepted ([operator] 1))
-(GateAcquired ([operator] 42 Clean))
-(GateBusy ([operator] 41))
-(InjectionAck ([operator] 1 7))
-(InjectionRejected ([operator] UnknownTerminal))
-(SubscriptionRetracted [operator])
-(SessionResolved ([operator] [/run/persona/terminal/sessions/operator/data.sock]))
+(TerminalReady (operator 1))
+(TerminalInputAccepted (operator 1))
+(GateAcquired (operator 42 Clean))
+(GateBusy (operator 41))
+(InjectionAck (operator 1 7))
+(InjectionRejected (operator UnknownTerminal))
+(SubscriptionRetracted operator)
+(SessionResolved (operator /run/persona/terminal/sessions/operator/data.sock))
 
 ;; Stream event
 
-(Event (TerminalWorkerLifecycleEvent ([operator] (Started ViewerFanout))))
+(Event (TerminalWorkerLifecycleEvent (operator (Started ViewerFanout))))

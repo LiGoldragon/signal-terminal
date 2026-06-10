@@ -16,97 +16,97 @@ pub use nota_next::{NotaDecode, NotaDecodeError, NotaEncode, NotaSource};
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalName(pub String);
+pub struct TerminalName(String);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalGeneration(pub Integer);
+pub struct TerminalGeneration(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalSequence(pub Integer);
+pub struct TerminalSequence(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalByteCount(pub Integer);
+pub struct TerminalByteCount(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalRows(pub Integer);
+pub struct TerminalRows(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalColumns(pub Integer);
+pub struct TerminalColumns(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalInputBytes(pub Vec<Integer>);
+pub struct TerminalInputBytes(Vec<Integer>);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalTranscriptBytes(pub Vec<Integer>);
+pub struct TerminalTranscriptBytes(Vec<Integer>);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct PromptPatternIdentifier(pub String);
+pub struct PromptPatternIdentifier(String);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct PromptPatternBytes(pub Vec<Integer>);
+pub struct PromptPatternBytes(Vec<Integer>);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct InputGateReason(pub String);
+pub struct InputGateReason(String);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct InputGateLeaseIdentifier(pub Integer);
+pub struct InputGateLeaseIdentifier(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct WirePath(pub String);
+pub struct WirePath(String);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SocketMode(pub Integer);
+pub struct SocketMode(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SystemPrincipal(pub String);
+pub struct SystemPrincipal(String);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct UnixUserIdentifier(pub Integer);
+pub struct UnixUserIdentifier(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ExitCode(pub Integer);
+pub struct ExitCode(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalSignalNumber(pub Integer);
+pub struct TerminalSignalNumber(Integer);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct WorkerFailureDetail(pub String);
+pub struct WorkerFailureDetail(String);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -203,7 +203,7 @@ pub enum PromptState {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct InputGateLease(pub InputGateLeaseIdentifier);
+pub struct InputGateLease(InputGateLeaseIdentifier);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -294,7 +294,7 @@ pub enum TerminalOperationKind {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalConnection(pub TerminalName);
+pub struct TerminalConnection(TerminalName);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -324,7 +324,7 @@ pub struct TerminalDetachment {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalCapture(pub TerminalName);
+pub struct TerminalCapture(TerminalName);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -345,7 +345,7 @@ pub struct UnregisterPromptPattern {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ListPromptPatterns(pub TerminalName);
+pub struct ListPromptPatterns(TerminalName);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -376,12 +376,12 @@ pub struct WriteInjection {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SubscribeTerminalWorkerLifecycle(pub TerminalName);
+pub struct SubscribeTerminalWorkerLifecycle(TerminalName);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalWorkerLifecycleToken(pub TerminalName);
+pub struct TerminalWorkerLifecycleToken(TerminalName);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -391,7 +391,7 @@ pub struct ListSessions {}
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ResolveSession(pub TerminalName);
+pub struct ResolveSession(TerminalName);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -557,7 +557,7 @@ pub struct TerminalWorkerLifecycleEvent {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SubscriptionRetracted(pub TerminalWorkerLifecycleToken);
+pub struct SubscriptionRetracted(TerminalWorkerLifecycleToken);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -570,7 +570,7 @@ pub struct SessionEntry {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SessionList(pub Vec<SessionEntry>);
+pub struct SessionList(Vec<SessionEntry>);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
@@ -651,8 +651,8 @@ pub enum Output {
 
 #[rustfmt::skip]
 impl TerminalName {
-    pub fn new(payload: String) -> Self {
-        Self(payload)
+    pub fn new(payload: impl Into<String>) -> Self {
+        Self(payload.into())
     }
     pub fn payload(&self) -> &String {
         &self.0
@@ -803,8 +803,8 @@ impl From<Vec<Integer>> for TerminalTranscriptBytes {
 
 #[rustfmt::skip]
 impl PromptPatternIdentifier {
-    pub fn new(payload: String) -> Self {
-        Self(payload)
+    pub fn new(payload: impl Into<String>) -> Self {
+        Self(payload.into())
     }
     pub fn payload(&self) -> &String {
         &self.0
@@ -841,8 +841,8 @@ impl From<Vec<Integer>> for PromptPatternBytes {
 
 #[rustfmt::skip]
 impl InputGateReason {
-    pub fn new(payload: String) -> Self {
-        Self(payload)
+    pub fn new(payload: impl Into<String>) -> Self {
+        Self(payload.into())
     }
     pub fn payload(&self) -> &String {
         &self.0
@@ -879,8 +879,8 @@ impl From<Integer> for InputGateLeaseIdentifier {
 
 #[rustfmt::skip]
 impl WirePath {
-    pub fn new(payload: String) -> Self {
-        Self(payload)
+    pub fn new(payload: impl Into<String>) -> Self {
+        Self(payload.into())
     }
     pub fn payload(&self) -> &String {
         &self.0
@@ -917,8 +917,8 @@ impl From<Integer> for SocketMode {
 
 #[rustfmt::skip]
 impl SystemPrincipal {
-    pub fn new(payload: String) -> Self {
-        Self(payload)
+    pub fn new(payload: impl Into<String>) -> Self {
+        Self(payload.into())
     }
     pub fn payload(&self) -> &String {
         &self.0
@@ -993,8 +993,8 @@ impl From<Integer> for TerminalSignalNumber {
 
 #[rustfmt::skip]
 impl WorkerFailureDetail {
-    pub fn new(payload: String) -> Self {
-        Self(payload)
+    pub fn new(payload: impl Into<String>) -> Self {
+        Self(payload.into())
     }
     pub fn payload(&self) -> &String {
         &self.0

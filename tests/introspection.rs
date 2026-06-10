@@ -1,12 +1,14 @@
+#[cfg(feature = "nota-text")]
 use nota_next::{NotaDecode, NotaEncode, NotaSource};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
+#[cfg(feature = "nota-text")]
+use signal_terminal::TerminalIntrospectionSnapshot;
 use signal_terminal::{
     Output, TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState,
-    TerminalEventObservation, TerminalGeneration, TerminalInputAccepted,
-    TerminalIntrospectionSnapshot, TerminalName, TerminalObservationSequence,
-    TerminalOperationKind, TerminalSessionArchiveObservation, TerminalSessionArchiveState,
-    TerminalSessionHealthObservation, TerminalSessionObservation, TerminalSessionState,
-    TerminalViewerAttachmentObservation, TerminalViewerAttachmentState,
+    TerminalEventObservation, TerminalGeneration, TerminalInputAccepted, TerminalName,
+    TerminalObservationSequence, TerminalOperationKind, TerminalSessionArchiveObservation,
+    TerminalSessionArchiveState, TerminalSessionHealthObservation, TerminalSessionObservation,
+    TerminalSessionState, TerminalViewerAttachmentObservation, TerminalViewerAttachmentState,
 };
 
 fn terminal() -> TerminalName {
@@ -34,6 +36,7 @@ where
     recovered
 }
 
+#[cfg(feature = "nota-text")]
 fn round_trip_nota<T>(value: T, expected: &str)
 where
     T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
@@ -67,6 +70,7 @@ fn terminal_session_observation_is_contract_owned_introspection_record() {
     assert_eq!(observation.state(), TerminalSessionState::Ready);
 }
 
+#[cfg(feature = "nota-text")]
 #[test]
 fn terminal_session_observation_typed_control_and_data_paths_round_trip_via_nota_text() {
     let observation = TerminalSessionObservation::ready(
@@ -78,7 +82,7 @@ fn terminal_session_observation_typed_control_and_data_paths_round_trip_via_nota
     let encoded = observation.to_nota();
     assert_eq!(
         encoded,
-        "([operator] [/tmp/terminal/operator/control.sock] [/tmp/terminal/operator/data.sock] 1 0 Ready)"
+        "(operator /tmp/terminal/operator/control.sock /tmp/terminal/operator/data.sock 1 0 Ready)"
     );
 
     let recovered = NotaSource::new(&encoded)
@@ -155,6 +159,7 @@ fn terminal_session_archive_observation_round_trips() {
     assert_eq!(observation.state(), TerminalSessionArchiveState::Archived);
 }
 
+#[cfg(feature = "nota-text")]
 #[test]
 fn terminal_introspection_snapshot_round_trips_through_nota_text() {
     round_trip_nota(
@@ -181,6 +186,6 @@ fn terminal_introspection_snapshot_round_trips_through_nota_text() {
                 "session rotated",
             )],
         },
-        "([([operator] [/run/persona/engine/terminal.control.sock] [/run/persona/engine/terminal.data.sock] 1 0 Ready)] [(7 [operator] WriteInjection Started)] [] [] [([operator] Ready 2)] [([operator] [session rotated] Archived)])",
+        "([(operator /run/persona/engine/terminal.control.sock /run/persona/engine/terminal.data.sock 1 0 Ready)] [(7 operator WriteInjection Started)] [] [] [(operator Ready 2)] [(operator [session rotated] Archived)])",
     );
 }
