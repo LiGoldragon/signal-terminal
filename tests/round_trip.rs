@@ -144,53 +144,57 @@ where
 #[test]
 fn every_request_round_trips_through_length_prefixed_frame() {
     let requests = [
-        Input::TerminalConnection(TerminalConnection::new(terminal())),
+        Input::TerminalConnection(TerminalConnection::new(terminal().into())),
         Input::TerminalInput(TerminalInput {
-            terminal: terminal(),
-            bytes: input_bytes(),
+            terminal: terminal().into(),
+            input_bytes: input_bytes().into(),
         }),
         Input::TerminalResize(TerminalResize {
-            terminal: terminal(),
-            rows: TerminalRows::new(24),
-            columns: TerminalColumns::new(80),
+            terminal: terminal().into(),
+            rows: TerminalRows::new(24).into(),
+            columns: TerminalColumns::new(80).into(),
         }),
         Input::TerminalDetachment(TerminalDetachment {
-            terminal: terminal(),
-            reason: TerminalDetachmentReason::HarnessStopped,
+            terminal: terminal().into(),
+            terminal_detachment_reason: TerminalDetachmentReason::HarnessStopped,
         }),
-        Input::TerminalCapture(TerminalCapture::new(terminal())),
+        Input::TerminalCapture(TerminalCapture::new(terminal().into())),
         Input::RegisterPromptPattern(RegisterPromptPattern {
-            terminal: terminal(),
-            pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(vec![36, 32])),
+            terminal: terminal().into(),
+            pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(vec![36, 32])).into(),
         }),
         Input::UnregisterPromptPattern(UnregisterPromptPattern {
-            terminal: terminal(),
-            pattern_id: prompt_pattern_identifier(),
+            terminal: terminal().into(),
+            pattern_identifier: prompt_pattern_identifier().into(),
         }),
-        Input::ListPromptPatterns(ListPromptPatterns::new(terminal())),
+        Input::ListPromptPatterns(ListPromptPatterns::new(terminal().into())),
         Input::AcquireInputGate(AcquireInputGate {
-            terminal: terminal(),
-            reason: InputGateReason::new("inject".to_owned()),
-            prompt_pattern_identifier: Some(prompt_pattern_identifier()),
+            terminal: terminal().into(),
+            input_gate_reason: InputGateReason::new("inject".to_owned()),
+            prompt_pattern_identifier_selection: Some(prompt_pattern_identifier()).into(),
         }),
         Input::AcquireInputGate(AcquireInputGate {
-            terminal: terminal(),
-            reason: InputGateReason::new("inject".to_owned()),
-            prompt_pattern_identifier: None,
+            terminal: terminal().into(),
+            input_gate_reason: InputGateReason::new("inject".to_owned()),
+            prompt_pattern_identifier_selection: None.into(),
         }),
         Input::ReleaseInputGate(ReleaseInputGate {
-            terminal: terminal(),
-            lease: input_gate_lease(),
+            terminal: terminal().into(),
+            lease: input_gate_lease().into(),
         }),
         Input::WriteInjection(WriteInjection {
-            terminal: terminal(),
-            lease: input_gate_lease(),
-            bytes: input_bytes(),
+            terminal: terminal().into(),
+            lease: input_gate_lease().into(),
+            input_bytes: input_bytes().into(),
         }),
-        Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle::new(terminal())),
-        Input::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken::new(terminal())),
+        Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle::new(
+            terminal().into(),
+        )),
+        Input::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken::new(
+            terminal().into(),
+        )),
         Input::ListSessions(ListSessions {}),
-        Input::ResolveSession(ResolveSession::new(terminal())),
+        Input::ResolveSession(ResolveSession::new(terminal().into())),
     ];
 
     for request in requests {
@@ -202,119 +206,124 @@ fn every_request_round_trips_through_length_prefixed_frame() {
 fn every_reply_round_trips_through_length_prefixed_frame() {
     let replies = [
         Output::TerminalReady(TerminalReady {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(1),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(1).into(),
         }),
         Output::TerminalInputAccepted(TerminalInputAccepted {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(1),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(1).into(),
         }),
         Output::TranscriptDelta(TranscriptDelta {
-            terminal: terminal(),
-            sequence: TerminalSequence::new(5),
-            bytes: transcript_bytes(),
+            terminal: terminal().into(),
+            sequence: TerminalSequence::new(5).into(),
+            transcript_bytes: transcript_bytes().into(),
         }),
         Output::TerminalResized(TerminalResized {
-            terminal: terminal(),
-            rows: TerminalRows::new(40),
-            columns: TerminalColumns::new(120),
-            generation: TerminalGeneration::new(2),
+            terminal: terminal().into(),
+            rows: TerminalRows::new(40).into(),
+            columns: TerminalColumns::new(120).into(),
+            generation: TerminalGeneration::new(2).into(),
         }),
         Output::TerminalCaptured(TerminalCaptured {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(2),
-            bytes: transcript_bytes(),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(2).into(),
+            transcript_bytes: transcript_bytes().into(),
         }),
         Output::TerminalDetached(TerminalDetached {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(2),
-            reason: TerminalDetachmentReason::ViewerReplaced,
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(2).into(),
+            terminal_detachment_reason: TerminalDetachmentReason::ViewerReplaced,
         }),
         Output::TerminalExited(TerminalExited {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(3),
-            status: TerminalExitStatus::Exited(ExitCode::new(0)),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(3).into(),
+            terminal_exit_status: TerminalExitStatus::Exited(ExitCode::new(0)),
         }),
         Output::TerminalExited(TerminalExited {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(3),
-            status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(3).into(),
+            terminal_exit_status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
         }),
         Output::TerminalExited(TerminalExited {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(3),
-            status: TerminalExitStatus::StatusUnavailable,
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(3).into(),
+            terminal_exit_status: TerminalExitStatus::StatusUnavailable,
         }),
         Output::TerminalRejected(TerminalRejected {
-            terminal: terminal(),
-            reason: TerminalRejectionReason::TransportFailed,
+            terminal: terminal().into(),
+            terminal_rejection_reason: TerminalRejectionReason::TransportFailed,
         }),
         Output::PromptPatternRegistered(PromptPatternRegistered {
-            terminal: terminal(),
-            pattern_id: prompt_pattern_identifier(),
+            terminal: terminal().into(),
+            pattern_identifier: prompt_pattern_identifier().into(),
         }),
         Output::PromptPatternUnregistered(PromptPatternUnregistered {
-            terminal: terminal(),
-            pattern_id: prompt_pattern_identifier(),
+            terminal: terminal().into(),
+            pattern_identifier: prompt_pattern_identifier().into(),
         }),
         Output::PromptPatternList(PromptPatternList {
-            terminal: terminal(),
+            terminal: terminal().into(),
             entries: vec![PromptPatternEntry {
-                pattern_id: prompt_pattern_identifier(),
-                pattern: PromptPattern::RegexSuffix(PromptPatternBytes::new(vec![36])),
-            }],
+                pattern_identifier: prompt_pattern_identifier().into(),
+                pattern: PromptPattern::RegexSuffix(PromptPatternBytes::new(vec![36])).into(),
+            }]
+            .into(),
         }),
         Output::GateAcquired(GateAcquired {
-            terminal: terminal(),
-            lease: input_gate_lease(),
+            terminal: terminal().into(),
+            lease: input_gate_lease().into(),
             prompt_state: PromptState::Dirty(TerminalByteCount::new(3)),
         }),
         Output::GateBusy(GateBusy {
-            terminal: terminal(),
-            current_holder: InputGateLeaseIdentifier::new(41),
+            terminal: terminal().into(),
+            current_holder: InputGateLeaseIdentifier::new(41).into(),
         }),
         Output::GateReleased(GateReleased {
-            terminal: terminal(),
-            lease: input_gate_lease(),
-            cached_human_bytes: TerminalByteCount::new(12),
+            terminal: terminal().into(),
+            lease: input_gate_lease().into(),
+            cached_human_bytes: TerminalByteCount::new(12).into(),
         }),
         Output::InjectionAck(InjectionAck {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(1),
-            sequence: TerminalSequence::new(7),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(1).into(),
+            sequence: TerminalSequence::new(7).into(),
         }),
         Output::InjectionRejected(InjectionRejected {
-            terminal: terminal(),
-            reason: InjectionRejectionReason::GateNotHeld,
+            terminal: terminal().into(),
+            injection_rejection_reason: InjectionRejectionReason::GateNotHeld,
         }),
         Output::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot {
-            terminal: terminal(),
+            terminal: terminal().into(),
             observations: vec![
                 TerminalWorkerLifecycle::Started(TerminalWorkerKind::InputWriter),
                 TerminalWorkerLifecycle::Stopped(TerminalWorkerStop {
-                    worker: TerminalWorkerKind::OutputReader,
-                    reason: TerminalWorkerStopReason::OutputReadFailed(WorkerFailureDetail::new(
-                        "broken pipe".to_owned(),
-                    )),
+                    terminal_worker_kind: TerminalWorkerKind::OutputReader,
+                    terminal_worker_stop_reason: TerminalWorkerStopReason::OutputReadFailed(
+                        WorkerFailureDetail::new("broken pipe".to_owned()),
+                    ),
                 }),
-            ],
+            ]
+            .into(),
         }),
         Output::SubscriptionRetracted(SubscriptionRetracted::new(
-            TerminalWorkerLifecycleToken::new(terminal()),
+            TerminalWorkerLifecycleToken::new(terminal().into()).into(),
         )),
-        Output::SessionList(SessionList::new(vec![
-            SessionEntry {
-                name: terminal(),
-                data_socket_path: data_socket_path("operator"),
-            },
-            SessionEntry {
-                name: second_terminal(),
-                data_socket_path: data_socket_path("designer"),
-            },
-        ])),
+        Output::SessionList(SessionList::new(
+            vec![
+                SessionEntry {
+                    name: terminal().into(),
+                    data_socket_path: data_socket_path("operator").into(),
+                },
+                SessionEntry {
+                    name: second_terminal().into(),
+                    data_socket_path: data_socket_path("designer").into(),
+                },
+            ]
+            .into(),
+        )),
         Output::SessionResolved(SessionResolved {
-            name: terminal(),
-            data_socket_path: data_socket_path("operator"),
+            name: terminal().into(),
+            data_socket_path: data_socket_path("operator").into(),
         }),
     ];
 
@@ -326,13 +335,14 @@ fn every_reply_round_trips_through_length_prefixed_frame() {
 #[test]
 fn worker_lifecycle_event_round_trips_through_subscription_frame() {
     let event = TerminalEvent::TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent {
-        terminal: terminal(),
+        terminal: terminal().into(),
         observation: TerminalWorkerLifecycle::Stopped(TerminalWorkerStop {
-            worker: TerminalWorkerKind::ChildExitWatcher,
-            reason: TerminalWorkerStopReason::ChildExited(WorkerFailureDetail::new(
-                "code 1".to_owned(),
-            )),
-        }),
+            terminal_worker_kind: TerminalWorkerKind::ChildExitWatcher,
+            terminal_worker_stop_reason: TerminalWorkerStopReason::ChildExited(
+                WorkerFailureDetail::new("code 1".to_owned()),
+            ),
+        })
+        .into(),
     });
 
     assert_eq!(round_trip_event(event.clone()), event);
@@ -340,12 +350,12 @@ fn worker_lifecycle_event_round_trips_through_subscription_frame() {
 
 #[test]
 fn payload_lift_into_request_uses_generated_from() {
-    let payload = TerminalConnection::new(terminal());
+    let payload = TerminalConnection::new(terminal().into());
     let request: Input = payload.clone().into();
     assert_eq!(request, Input::TerminalConnection(payload));
 
     // The name/type-mismatched retraction op lifts the token to its variant.
-    let token = TerminalWorkerLifecycleToken::new(terminal());
+    let token = TerminalWorkerLifecycleToken::new(terminal().into());
     let retraction: Input = token.clone().into();
     assert_eq!(retraction, Input::TerminalWorkerLifecycleRetraction(token));
 }
@@ -353,8 +363,8 @@ fn payload_lift_into_request_uses_generated_from() {
 #[test]
 fn payload_lift_into_reply_uses_generated_from() {
     let payload = TerminalReady {
-        terminal: terminal(),
-        generation: TerminalGeneration::new(4),
+        terminal: terminal().into(),
+        generation: TerminalGeneration::new(4).into(),
     };
     let reply: Output = payload.clone().into();
     assert_eq!(reply, Output::TerminalReady(payload));
@@ -363,8 +373,8 @@ fn payload_lift_into_reply_uses_generated_from() {
 #[test]
 fn event_lifts_into_output_and_terminal_event() {
     let payload = TerminalWorkerLifecycleEvent {
-        terminal: terminal(),
-        observation: TerminalWorkerLifecycle::Started(TerminalWorkerKind::SocketAcceptLoop),
+        terminal: terminal().into(),
+        observation: TerminalWorkerLifecycle::Started(TerminalWorkerKind::SocketAcceptLoop).into(),
     };
     let event: TerminalEvent = payload.clone().into();
     assert_eq!(
@@ -379,21 +389,23 @@ fn event_lifts_into_output_and_terminal_event() {
 #[test]
 fn input_exposes_contract_owned_operation_kind() {
     assert_eq!(
-        Input::TerminalConnection(TerminalConnection::new(terminal())).operation_kind(),
+        Input::TerminalConnection(TerminalConnection::new(terminal().into())).operation_kind(),
         TerminalOperationKind::TerminalConnection
     );
     assert_eq!(
         Input::WriteInjection(WriteInjection {
-            terminal: terminal(),
-            lease: input_gate_lease(),
-            bytes: input_bytes(),
+            terminal: terminal().into(),
+            lease: input_gate_lease().into(),
+            input_bytes: input_bytes().into(),
         })
         .operation_kind(),
         TerminalOperationKind::WriteInjection
     );
     assert_eq!(
-        Input::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken::new(terminal()))
-            .operation_kind(),
+        Input::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken::new(
+            terminal().into()
+        ))
+        .operation_kind(),
         TerminalOperationKind::TerminalWorkerLifecycleRetraction
     );
     assert_eq!(
@@ -431,34 +443,34 @@ fn input_variants_declare_contract_local_operation_heads() {
 fn remodeled_enum_variants_round_trip_through_nota_text() {
     round_trip_nota(
         Output::TerminalExited(TerminalExited {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(2),
-            status: TerminalExitStatus::Exited(ExitCode::new(0)),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(2).into(),
+            terminal_exit_status: TerminalExitStatus::Exited(ExitCode::new(0)),
         }),
         "(TerminalExited (operator 2 (Exited 0)))",
     );
     round_trip_nota(
         Output::TerminalExited(TerminalExited {
-            terminal: terminal(),
-            generation: TerminalGeneration::new(2),
-            status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
+            terminal: terminal().into(),
+            generation: TerminalGeneration::new(2).into(),
+            terminal_exit_status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
         }),
         "(TerminalExited (operator 2 (Signaled 9)))",
     );
     round_trip_nota(
         Output::GateAcquired(GateAcquired {
-            terminal: terminal(),
-            lease: input_gate_lease(),
+            terminal: terminal().into(),
+            lease: input_gate_lease().into(),
             prompt_state: PromptState::Dirty(TerminalByteCount::new(3)),
         }),
         "(GateAcquired (operator 42 (Dirty 3)))",
     );
     round_trip_nota(
         TerminalWorkerLifecycle::Stopped(TerminalWorkerStop {
-            worker: TerminalWorkerKind::OutputReader,
-            reason: TerminalWorkerStopReason::OutputReadFailed(WorkerFailureDetail::new(
-                "broken pipe".to_owned(),
-            )),
+            terminal_worker_kind: TerminalWorkerKind::OutputReader,
+            terminal_worker_stop_reason: TerminalWorkerStopReason::OutputReadFailed(
+                WorkerFailureDetail::new("broken pipe".to_owned()),
+            ),
         }),
         "(Stopped (OutputReader (OutputReadFailed [broken pipe])))",
     );
@@ -469,8 +481,8 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
 fn byte_fields_carry_one_integer_per_byte_on_the_wire() {
     round_trip_nota(
         Input::TerminalInput(TerminalInput {
-            terminal: terminal(),
-            bytes: input_bytes(),
+            terminal: terminal().into(),
+            input_bytes: input_bytes().into(),
         }),
         "(TerminalInput (operator [104 101 108 108 111]))",
     );
@@ -486,15 +498,17 @@ fn operation_kind_round_trips_through_nota_text() {
 #[test]
 fn terminal_daemon_configuration_round_trips_through_nota_text() {
     let configuration = TerminalDaemonConfiguration {
-        terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock".to_owned()),
-        terminal_socket_mode: SocketMode::new(0o600),
-        meta_terminal_socket_path: WirePath::new("/run/persona/X/meta-terminal.sock".to_owned()),
-        meta_terminal_socket_mode: SocketMode::new(0o600),
+        terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock".to_owned()).into(),
+        terminal_socket_mode: SocketMode::new(0o600).into(),
+        meta_terminal_socket_path: WirePath::new("/run/persona/X/meta-terminal.sock".to_owned())
+            .into(),
+        meta_terminal_socket_mode: SocketMode::new(0o600).into(),
         supervision_socket_path: WirePath::new(
             "/run/persona/X/terminal-supervision.sock".to_owned(),
-        ),
-        supervision_socket_mode: SocketMode::new(0o600),
-        store_path: WirePath::new("/var/lib/persona/X/terminal.sema".to_owned()),
+        )
+        .into(),
+        supervision_socket_mode: SocketMode::new(0o600).into(),
+        store_path: WirePath::new("/var/lib/persona/X/terminal.sema".to_owned()).into(),
         owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
@@ -511,15 +525,17 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
 #[test]
 fn terminal_daemon_configuration_round_trips_through_rkyv() {
     let configuration = TerminalDaemonConfiguration {
-        terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock".to_owned()),
-        terminal_socket_mode: SocketMode::new(0o600),
-        meta_terminal_socket_path: WirePath::new("/run/persona/X/meta-terminal.sock".to_owned()),
-        meta_terminal_socket_mode: SocketMode::new(0o600),
+        terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock".to_owned()).into(),
+        terminal_socket_mode: SocketMode::new(0o600).into(),
+        meta_terminal_socket_path: WirePath::new("/run/persona/X/meta-terminal.sock".to_owned())
+            .into(),
+        meta_terminal_socket_mode: SocketMode::new(0o600).into(),
         supervision_socket_path: WirePath::new(
             "/run/persona/X/terminal-supervision.sock".to_owned(),
-        ),
-        supervision_socket_mode: SocketMode::new(0o600),
-        store_path: WirePath::new("/var/lib/persona/X/terminal.sema".to_owned()),
+        )
+        .into(),
+        supervision_socket_mode: SocketMode::new(0o600).into(),
+        store_path: WirePath::new("/var/lib/persona/X/terminal.sema".to_owned()).into(),
         owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 

@@ -28,7 +28,7 @@ fn operator() -> TerminalName {
 }
 
 fn token() -> TerminalWorkerLifecycleToken {
-    TerminalWorkerLifecycleToken::new(operator())
+    TerminalWorkerLifecycleToken::new(operator().into())
 }
 
 fn lease() -> InputGateLease {
@@ -64,64 +64,66 @@ where
 #[test]
 fn canonical_request_examples_round_trip() {
     round_trip(
-        Input::TerminalConnection(TerminalConnection::new(operator())),
+        Input::TerminalConnection(TerminalConnection::new(operator().into())),
         "(TerminalConnection operator)",
     );
     round_trip(
         Input::TerminalInput(TerminalInput {
-            terminal: operator(),
-            bytes: hello_bytes(),
+            terminal: operator().into(),
+            input_bytes: hello_bytes().into(),
         }),
         "(TerminalInput (operator [104 101 108 108 111]))",
     );
     round_trip(
         Input::TerminalResize(TerminalResize {
-            terminal: operator(),
-            rows: TerminalRows::new(24),
-            columns: TerminalColumns::new(80),
+            terminal: operator().into(),
+            rows: TerminalRows::new(24).into(),
+            columns: TerminalColumns::new(80).into(),
         }),
         "(TerminalResize (operator 24 80))",
     );
     round_trip(
         Input::TerminalDetachment(TerminalDetachment {
-            terminal: operator(),
-            reason: TerminalDetachmentReason::HumanRequested,
+            terminal: operator().into(),
+            terminal_detachment_reason: TerminalDetachmentReason::HumanRequested,
         }),
         "(TerminalDetachment (operator HumanRequested))",
     );
     round_trip(
-        Input::TerminalCapture(TerminalCapture::new(operator())),
+        Input::TerminalCapture(TerminalCapture::new(operator().into())),
         "(TerminalCapture operator)",
     );
     round_trip(
-        Input::ResolveSession(ResolveSession::new(operator())),
+        Input::ResolveSession(ResolveSession::new(operator().into())),
         "(ResolveSession operator)",
     );
     round_trip(
         Input::AcquireInputGate(AcquireInputGate {
-            terminal: operator(),
-            reason: InputGateReason::new("send router-delivered command".to_owned()),
-            prompt_pattern_identifier: None,
+            terminal: operator().into(),
+            input_gate_reason: InputGateReason::new("send router-delivered command".to_owned()),
+            prompt_pattern_identifier_selection: None.into(),
         }),
         "(AcquireInputGate (operator [send router-delivered command] None))",
     );
     round_trip(
         Input::ReleaseInputGate(ReleaseInputGate {
-            terminal: operator(),
-            lease: lease(),
+            terminal: operator().into(),
+            lease: lease().into(),
         }),
         "(ReleaseInputGate (operator 42))",
     );
     round_trip(
         Input::WriteInjection(WriteInjection {
-            terminal: operator(),
-            lease: lease(),
-            bytes: hello_bytes(),
+            terminal: operator().into(),
+            lease: lease().into(),
+            input_bytes: hello_bytes().into(),
         }),
         "(WriteInjection (operator 42 [104 101 108 108 111]))",
     );
     round_trip(
-        Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle::new(operator())),
+        Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle::new(
+            operator().into(),
+        )),
         "(SubscribeTerminalWorkerLifecycle operator)",
     );
     round_trip(
@@ -134,56 +136,56 @@ fn canonical_request_examples_round_trip() {
 fn canonical_reply_examples_round_trip() {
     round_trip(
         Output::TerminalReady(TerminalReady {
-            terminal: operator(),
-            generation: TerminalGeneration::new(1),
+            terminal: operator().into(),
+            generation: TerminalGeneration::new(1).into(),
         }),
         "(TerminalReady (operator 1))",
     );
     round_trip(
         Output::TerminalInputAccepted(TerminalInputAccepted {
-            terminal: operator(),
-            generation: TerminalGeneration::new(1),
+            terminal: operator().into(),
+            generation: TerminalGeneration::new(1).into(),
         }),
         "(TerminalInputAccepted (operator 1))",
     );
     round_trip(
         Output::GateAcquired(GateAcquired {
-            terminal: operator(),
-            lease: lease(),
+            terminal: operator().into(),
+            lease: lease().into(),
             prompt_state: PromptState::Clean,
         }),
         "(GateAcquired (operator 42 Clean))",
     );
     round_trip(
         Output::GateBusy(GateBusy {
-            terminal: operator(),
-            current_holder: InputGateLeaseIdentifier::new(41),
+            terminal: operator().into(),
+            current_holder: InputGateLeaseIdentifier::new(41).into(),
         }),
         "(GateBusy (operator 41))",
     );
     round_trip(
         Output::InjectionAck(InjectionAck {
-            terminal: operator(),
-            generation: TerminalGeneration::new(1),
-            sequence: TerminalSequence::new(7),
+            terminal: operator().into(),
+            generation: TerminalGeneration::new(1).into(),
+            sequence: TerminalSequence::new(7).into(),
         }),
         "(InjectionAck (operator 1 7))",
     );
     round_trip(
         Output::InjectionRejected(InjectionRejected {
-            terminal: operator(),
-            reason: InjectionRejectionReason::UnknownTerminal,
+            terminal: operator().into(),
+            injection_rejection_reason: InjectionRejectionReason::UnknownTerminal,
         }),
         "(InjectionRejected (operator UnknownTerminal))",
     );
     round_trip(
-        Output::SubscriptionRetracted(SubscriptionRetracted::new(token())),
+        Output::SubscriptionRetracted(SubscriptionRetracted::new(token().into())),
         "(SubscriptionRetracted operator)",
     );
     round_trip(
         Output::SessionResolved(SessionResolved {
-            name: operator(),
-            data_socket_path: data_socket_path(),
+            name: operator().into(),
+            data_socket_path: data_socket_path().into(),
         }),
         "(SessionResolved (operator /run/persona/terminal/sessions/operator/data.sock))",
     );
@@ -194,8 +196,9 @@ fn canonical_event_example_round_trips() {
     round_trip(
         Output::Event(TerminalEvent::TerminalWorkerLifecycleEvent(
             TerminalWorkerLifecycleEvent {
-                terminal: operator(),
-                observation: TerminalWorkerLifecycle::Started(TerminalWorkerKind::ViewerFanout),
+                terminal: operator().into(),
+                observation: TerminalWorkerLifecycle::Started(TerminalWorkerKind::ViewerFanout)
+                    .into(),
             },
         )),
         "(Event (TerminalWorkerLifecycleEvent (operator (Started ViewerFanout))))",

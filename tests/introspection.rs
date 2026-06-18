@@ -115,8 +115,8 @@ fn terminal_delivery_attempt_observation_round_trips() {
 #[test]
 fn terminal_event_observation_round_trips() {
     let event = Output::from(TerminalInputAccepted {
-        terminal: terminal(),
-        generation: TerminalGeneration::new(3),
+        terminal: terminal().into(),
+        generation: TerminalGeneration::new(3).into(),
     });
     let observation =
         TerminalEventObservation::new(TerminalObservationSequence::new(11), terminal(), event);
