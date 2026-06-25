@@ -144,7 +144,7 @@
   SessionResolved { Name DataSocketPath }
 
   TerminalEvent [(TerminalWorkerLifecycleEvent TerminalWorkerLifecycleEvent belongs TerminalWorkerLifecycleStream)]
-  TerminalWorkerLifecycleStream (Stream { token TerminalWorkerLifecycleToken opened TerminalWorkerLifecycleSnapshot event TerminalEvent close TerminalWorkerLifecycleToken })
+  TerminalWorkerLifecycleStream (Stream { token.TerminalWorkerLifecycleToken opened.TerminalWorkerLifecycleSnapshot event.TerminalEvent close.TerminalWorkerLifecycleToken })
 
   TerminalDaemonConfiguration {
     TerminalSocketPath
