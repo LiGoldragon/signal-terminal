@@ -30,7 +30,7 @@ fn terminal_contract_is_schema_derived_without_retired_helper_dependencies() {
         "direct signal-terminal users keep the NOTA projection by default",
     );
     assert!(
-        cargo_toml.contains("nota-text = [\"dep:nota-next\", \"signal-frame/nota-text\"]"),
+        cargo_toml.contains("nota-text = [\"dep:nota\", \"signal-frame/nota-text\"]"),
         "generated NOTA traits and signal-frame NOTA support are gated through the local feature",
     );
 }

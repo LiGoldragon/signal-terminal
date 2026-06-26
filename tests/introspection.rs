@@ -1,5 +1,5 @@
 #[cfg(feature = "nota-text")]
-use nota_next::{NotaDecode, NotaEncode, NotaSource};
+use nota::{NotaDecode, NotaEncode, NotaSource};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 #[cfg(feature = "nota-text")]
 use signal_terminal::TerminalIntrospectionSnapshot;

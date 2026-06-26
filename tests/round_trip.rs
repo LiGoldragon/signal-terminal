@@ -6,7 +6,7 @@
 //! emission on the `signal_frame::StreamingFrame` envelope.
 
 #[cfg(feature = "nota-text")]
-use nota_next::{NotaDecode, NotaEncode, NotaSource};
+use nota::{NotaDecode, NotaEncode, NotaSource};
 use signal_frame::{
     ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
     SignalOperationHeads, StreamEventIdentifier, SubReply, SubscriptionTokenInner,

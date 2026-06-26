@@ -10,7 +10,7 @@ use crate::{Output, TerminalGeneration, TerminalName, TerminalOperationKind, Ter
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TerminalObservationSequence(u64);
@@ -27,7 +27,7 @@ impl TerminalObservationSequence {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalControlSocketPath(String);
@@ -48,7 +48,7 @@ impl TerminalControlSocketPath {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalDataSocketPath(String);
@@ -69,7 +69,7 @@ impl TerminalDataSocketPath {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalViewerName(String);
@@ -86,7 +86,7 @@ impl TerminalViewerName {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalArchiveReason(String);
@@ -103,7 +103,7 @@ impl TerminalArchiveReason {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalSessionState {
@@ -122,7 +122,7 @@ impl TerminalSessionState {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionObservation {
@@ -177,7 +177,7 @@ impl TerminalSessionObservation {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalDeliveryAttemptState {
@@ -186,7 +186,7 @@ pub enum TerminalDeliveryAttemptState {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalDeliveryAttemptObservation {
@@ -229,7 +229,7 @@ impl TerminalDeliveryAttemptObservation {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalEventObservation {
@@ -266,7 +266,7 @@ impl TerminalEventObservation {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalViewerAttachmentState {
@@ -276,7 +276,7 @@ pub enum TerminalViewerAttachmentState {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalViewerAttachmentObservation {
@@ -320,7 +320,7 @@ impl TerminalViewerAttachmentObservation {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionHealthObservation {
@@ -357,7 +357,7 @@ impl TerminalSessionHealthObservation {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalSessionArchiveState {
@@ -366,7 +366,7 @@ pub enum TerminalSessionArchiveState {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionArchiveObservation {
@@ -399,7 +399,7 @@ impl TerminalSessionArchiveObservation {
 
 #[cfg_attr(
     feature = "nota-text",
-    derive(nota_next::NotaDecode, nota_next::NotaEncode)
+    derive(nota::NotaDecode, nota::NotaEncode)
 )]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalIntrospectionSnapshot {
