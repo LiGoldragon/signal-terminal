@@ -293,6 +293,7 @@ name terminal-owned inspectable state at the Persona terminal boundary.
 | Wire enums contain no `Unknown` escape hatch. | Only `InjectionRejectionReason::{UnknownTerminal,UnknownLease}` carry the word "Unknown" and those are positive domain rejections (see next row). |
 | Any record name containing `Unknown` is a positive "entity not in our state" rejection, not a polling-shape placeholder. | `InjectionRejectionReason::UnknownTerminal` / `UnknownLease` name "the terminal/lease id you sent isn't in our state" — closed, positively-defined failure modes. |
 | Byte fields carry one integer per byte on the wire. | `TerminalInputBytes` / `TerminalTranscriptBytes` / `PromptPatternBytes` are `(Vec Integer)`; `tests/round_trip.rs` asserts the per-byte text form. |
+| Request payloads do not mint daemon-owned identity. | Callers never supply terminal generations, leases, or sequences the daemon owns; `terminal` mints those. |
 | Write injection is lease-scoped; terminal mints the resulting sequence. | `WriteInjection` carries `InputGateLease`; `InjectionAck` carries the generated `TerminalGeneration` and `TerminalSequence`. |
 | Round-trip witnesses cover every variant in rkyv and NOTA. | `tests/round_trip.rs` covers every request, reply, and event variant; `examples/canonical.nota` holds one canonical text example per family and `tests/canonical_examples.rs` parses and re-emits each. |
 | No stringly-typed dispatch for closed-set states. | All kind / reason / state fields are typed closed enums. |
