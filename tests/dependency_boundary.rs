@@ -4,8 +4,8 @@ fn terminal_contract_is_schema_derived_without_retired_helper_dependencies() {
     let source = include_str!("../src/lib.rs");
 
     assert!(
-        cargo_toml.contains("schema-rust-next"),
-        "schema-rust-next owns generated contract emission",
+        cargo_toml.contains("schema-rust"),
+        "schema-rust owns generated contract emission",
     );
     assert!(
         cargo_toml
