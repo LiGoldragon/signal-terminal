@@ -2,7 +2,7 @@
 //! contract.
 //!
 //! Each test names exactly what shape it pins down; per the
-//! "blunt test names" convention. The wire form is the schema-rust-next
+//! "blunt test names" convention. The wire form is the schema-rust
 //! emission on the `signal_frame::StreamingFrame` envelope.
 
 #[cfg(feature = "nota-text")]

@@ -8,10 +8,7 @@ use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 
 use crate::{Output, TerminalGeneration, TerminalName, TerminalOperationKind, TerminalSequence};
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TerminalObservationSequence(u64);
 
@@ -25,10 +22,7 @@ impl TerminalObservationSequence {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalControlSocketPath(String);
 
@@ -46,10 +40,7 @@ impl TerminalControlSocketPath {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalDataSocketPath(String);
 
@@ -67,10 +58,7 @@ impl TerminalDataSocketPath {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalViewerName(String);
 
@@ -84,10 +72,7 @@ impl TerminalViewerName {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TerminalArchiveReason(String);
 
@@ -101,10 +86,7 @@ impl TerminalArchiveReason {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalSessionState {
     Ready,
@@ -120,10 +102,7 @@ impl TerminalSessionState {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionObservation {
     pub terminal: TerminalName,
@@ -175,19 +154,13 @@ impl TerminalSessionObservation {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalDeliveryAttemptState {
     Started,
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalDeliveryAttemptObservation {
     pub sequence: TerminalObservationSequence,
@@ -227,10 +200,7 @@ impl TerminalDeliveryAttemptObservation {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalEventObservation {
     pub sequence: TerminalObservationSequence,
@@ -264,20 +234,14 @@ impl TerminalEventObservation {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalViewerAttachmentState {
     Attached,
     Detached,
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalViewerAttachmentObservation {
     pub sequence: TerminalObservationSequence,
@@ -318,10 +282,7 @@ impl TerminalViewerAttachmentObservation {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionHealthObservation {
     pub terminal: TerminalName,
@@ -355,19 +316,13 @@ impl TerminalSessionHealthObservation {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalSessionArchiveState {
     Archived,
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionArchiveObservation {
     pub terminal: TerminalName,
@@ -397,10 +352,7 @@ impl TerminalSessionArchiveObservation {
     }
 }
 
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaEncode)
-)]
+#[cfg_attr(feature = "nota-text", derive(nota::NotaDecode, nota::NotaEncode))]
 #[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TerminalIntrospectionSnapshot {
     pub sessions: Vec<TerminalSessionObservation>,
