@@ -1,6 +1,6 @@
 [package]
 name         = "signal-terminal"
-version      = "0.2.2"
+version      = "0.2.3"
 edition      = "2024"
 rust-version = "1.89"
 license      = "MIT OR Apache-2.0"
@@ -25,7 +25,8 @@ signal-frame = { git = "https://github.com/LiGoldragon/signal-frame.git", branch
 thiserror    = "2"
 
 [build-dependencies]
-schema-rust = { package = "schema-rust", git = "https://github.com/LiGoldragon/schema-rust.git", branch = "main" }
+schema      = { package = "schema", git = "https://github.com/LiGoldragon/schema.git", rev = "4a8aaf1de3aaf476577d5b4e93691ef47c135d1a" }
+schema-rust = { package = "schema-rust", git = "https://github.com/LiGoldragon/schema-rust.git", rev = "886a9009077bdf9ee0e71fa0fa31aaf6e5444dd3" }
 
 [lints.rust]
 unsafe_code = "forbid"

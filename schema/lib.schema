@@ -47,10 +47,10 @@
   TerminalByteCount Integer
   TerminalRows Integer
   TerminalColumns Integer
-  TerminalInputBytes (Vec Integer)
-  TerminalTranscriptBytes (Vec Integer)
+  TerminalInputBytes (Vector Integer)
+  TerminalTranscriptBytes (Vector Integer)
   PromptPatternIdentifier String
-  PromptPatternBytes (Vec Integer)
+  PromptPatternBytes (Vector Integer)
   InputGateReason String
   InputGateLeaseIdentifier Integer
   WirePath String
@@ -74,11 +74,11 @@
   Lease InputGateLease
   CurrentHolder InputGateLeaseIdentifier
   CachedHumanBytes TerminalByteCount
-  Observations (Vec TerminalWorkerLifecycle)
+  Observations (Vector TerminalWorkerLifecycle)
   Observation TerminalWorkerLifecycle
   Token TerminalWorkerLifecycleToken
-  Entries (Vec PromptPatternEntry)
-  SessionEntries (Vec SessionEntry)
+  Entries (Vector PromptPatternEntry)
+  SessionEntries (Vector SessionEntry)
   Name TerminalName
   DataSocketPath WirePath
   TerminalSocketPath WirePath
