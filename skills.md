@@ -63,7 +63,7 @@ ack echoing the token.
   delivery attempts, terminal events, viewer attachments, session
   health, and session archive projections.
 - The generated `Frame` / `FrameBody` aliases
-  (`StreamingFrame`/`StreamingFrameBody<Input, Output, TerminalEvent>`).
+  (`ExchangeFrame`/`ExchangeFrameBody<Input, Output>`).
 - Wire-form round-trip tests.
 
 ## What this repo does not own

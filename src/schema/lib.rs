@@ -609,7 +609,7 @@ pub enum TerminalOperationKind {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalConnection(Terminal);
+pub struct TerminalConnectionRequest(Terminal);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -617,7 +617,7 @@ pub struct TerminalConnection(Terminal);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalInput {
+pub struct TerminalInputRequest {
     pub terminal: Terminal,
     pub input_bytes: InputBytes,
 }
@@ -628,7 +628,7 @@ pub struct TerminalInput {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalResize {
+pub struct TerminalResizeRequest {
     pub terminal: Terminal,
     pub rows: Rows,
     pub columns: Columns,
@@ -640,7 +640,7 @@ pub struct TerminalResize {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalDetachment {
+pub struct TerminalDetachmentRequest {
     pub terminal: Terminal,
     pub terminal_detachment_reason: TerminalDetachmentReason,
 }
@@ -651,7 +651,7 @@ pub struct TerminalDetachment {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalCapture(Terminal);
+pub struct TerminalCaptureRequest(Terminal);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -659,7 +659,7 @@ pub struct TerminalCapture(Terminal);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct RegisterPromptPattern {
+pub struct RegisterPromptPatternRequest {
     pub terminal: Terminal,
     pub pattern: Pattern,
 }
@@ -670,7 +670,7 @@ pub struct RegisterPromptPattern {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct UnregisterPromptPattern {
+pub struct UnregisterPromptPatternRequest {
     pub terminal: Terminal,
     pub pattern_identifier: PatternIdentifier,
 }
@@ -681,7 +681,7 @@ pub struct UnregisterPromptPattern {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ListPromptPatterns(Terminal);
+pub struct ListPromptPatternsRequest(Terminal);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -689,7 +689,7 @@ pub struct ListPromptPatterns(Terminal);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct AcquireInputGate {
+pub struct AcquireInputGateRequest {
     pub terminal: Terminal,
     pub input_gate_reason: InputGateReason,
     pub prompt_pattern_identifier_selection: PromptPatternIdentifierSelection,
@@ -701,7 +701,7 @@ pub struct AcquireInputGate {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ReleaseInputGate {
+pub struct ReleaseInputGateRequest {
     pub terminal: Terminal,
     pub lease: Lease,
 }
@@ -712,7 +712,7 @@ pub struct ReleaseInputGate {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct WriteInjection {
+pub struct WriteInjectionRequest {
     pub terminal: Terminal,
     pub lease: Lease,
     pub input_bytes: InputBytes,
@@ -724,7 +724,7 @@ pub struct WriteInjection {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SubscribeTerminalWorkerLifecycle(Terminal);
+pub struct SubscribeTerminalWorkerLifecycleRequest(Terminal);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -740,7 +740,7 @@ pub struct TerminalWorkerLifecycleToken(Terminal);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ListSessions {}
+pub struct ListSessionsRequest {}
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -748,7 +748,7 @@ pub struct ListSessions {}
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct ResolveSession(Name);
+pub struct ResolveSessionRequest(Name);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -756,7 +756,7 @@ pub struct ResolveSession(Name);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalReady {
+pub struct TerminalReadyReply {
     pub terminal: Terminal,
     pub generation: Generation,
 }
@@ -767,7 +767,7 @@ pub struct TerminalReady {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalInputAccepted {
+pub struct TerminalInputAcceptedReply {
     pub terminal: Terminal,
     pub generation: Generation,
 }
@@ -778,7 +778,7 @@ pub struct TerminalInputAccepted {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TranscriptDelta {
+pub struct TranscriptDeltaReply {
     pub terminal: Terminal,
     pub sequence: Sequence,
     pub transcript_bytes: TranscriptBytes,
@@ -790,7 +790,7 @@ pub struct TranscriptDelta {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalResized {
+pub struct TerminalResizedReply {
     pub terminal: Terminal,
     pub rows: Rows,
     pub columns: Columns,
@@ -803,7 +803,7 @@ pub struct TerminalResized {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalCaptured {
+pub struct TerminalCapturedReply {
     pub terminal: Terminal,
     pub generation: Generation,
     pub transcript_bytes: TranscriptBytes,
@@ -815,7 +815,7 @@ pub struct TerminalCaptured {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalDetached {
+pub struct TerminalDetachedReply {
     pub terminal: Terminal,
     pub generation: Generation,
     pub terminal_detachment_reason: TerminalDetachmentReason,
@@ -827,7 +827,7 @@ pub struct TerminalDetached {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalExited {
+pub struct TerminalExitedReply {
     pub terminal: Terminal,
     pub generation: Generation,
     pub terminal_exit_status: TerminalExitStatus,
@@ -839,7 +839,7 @@ pub struct TerminalExited {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalRejected {
+pub struct TerminalRejectedReply {
     pub terminal: Terminal,
     pub terminal_rejection_reason: TerminalRejectionReason,
 }
@@ -850,7 +850,7 @@ pub struct TerminalRejected {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct PromptPatternRegistered {
+pub struct PromptPatternRegisteredReply {
     pub terminal: Terminal,
     pub pattern_identifier: PatternIdentifier,
 }
@@ -861,7 +861,7 @@ pub struct PromptPatternRegistered {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct PromptPatternUnregistered {
+pub struct PromptPatternUnregisteredReply {
     pub terminal: Terminal,
     pub pattern_identifier: PatternIdentifier,
 }
@@ -883,7 +883,7 @@ pub struct PromptPatternEntry {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct PromptPatternList {
+pub struct PromptPatternListReply {
     pub terminal: Terminal,
     pub entries: Entries,
 }
@@ -894,7 +894,7 @@ pub struct PromptPatternList {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct GateAcquired {
+pub struct GateAcquiredReply {
     pub terminal: Terminal,
     pub lease: Lease,
     pub prompt_state: PromptState,
@@ -906,7 +906,7 @@ pub struct GateAcquired {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct GateBusy {
+pub struct GateBusyReply {
     pub terminal: Terminal,
     pub current_holder: CurrentHolder,
 }
@@ -917,7 +917,7 @@ pub struct GateBusy {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct GateReleased {
+pub struct GateReleasedReply {
     pub terminal: Terminal,
     pub lease: Lease,
     pub cached_human_bytes: CachedHumanBytes,
@@ -929,7 +929,7 @@ pub struct GateReleased {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct InjectionAck {
+pub struct InjectionAckReply {
     pub terminal: Terminal,
     pub generation: Generation,
     pub sequence: Sequence,
@@ -941,7 +941,7 @@ pub struct InjectionAck {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct InjectionRejected {
+pub struct InjectionRejectedReply {
     pub terminal: Terminal,
     pub injection_rejection_reason: InjectionRejectionReason,
 }
@@ -952,7 +952,7 @@ pub struct InjectionRejected {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalWorkerLifecycleSnapshot {
+pub struct TerminalWorkerLifecycleSnapshotReply {
     pub terminal: Terminal,
     pub observations: Observations,
 }
@@ -963,7 +963,7 @@ pub struct TerminalWorkerLifecycleSnapshot {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct TerminalWorkerLifecycleEvent {
+pub struct TerminalWorkerLifecycleEventPayload {
     pub terminal: Terminal,
     pub observation: Observation,
 }
@@ -974,7 +974,7 @@ pub struct TerminalWorkerLifecycleEvent {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SubscriptionRetracted(Token);
+pub struct SubscriptionRetractedReply(Token);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -993,7 +993,7 @@ pub struct SessionEntry {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SessionList(SessionEntries);
+pub struct SessionListReply(SessionEntries);
 
 #[rustfmt::skip]
 #[cfg_attr(
@@ -1001,7 +1001,7 @@ pub struct SessionList(SessionEntries);
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub struct SessionResolved {
+pub struct SessionResolvedReply {
     pub name: Name,
     pub data_socket_path: DataSocketPath,
 }
@@ -1013,7 +1013,7 @@ pub struct SessionResolved {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum TerminalEvent {
-    TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent),
+    TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEventPayload),
 }
 
 #[rustfmt::skip]
@@ -1040,21 +1040,21 @@ pub struct TerminalDaemonConfiguration {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum Input {
-    TerminalConnection(TerminalConnection),
-    TerminalInput(TerminalInput),
-    TerminalResize(TerminalResize),
-    TerminalDetachment(TerminalDetachment),
-    TerminalCapture(TerminalCapture),
-    RegisterPromptPattern(RegisterPromptPattern),
-    UnregisterPromptPattern(UnregisterPromptPattern),
-    ListPromptPatterns(ListPromptPatterns),
-    AcquireInputGate(AcquireInputGate),
-    ReleaseInputGate(ReleaseInputGate),
-    WriteInjection(WriteInjection),
-    SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle),
+    TerminalConnection(TerminalConnectionRequest),
+    TerminalInput(TerminalInputRequest),
+    TerminalResize(TerminalResizeRequest),
+    TerminalDetachment(TerminalDetachmentRequest),
+    TerminalCapture(TerminalCaptureRequest),
+    RegisterPromptPattern(RegisterPromptPatternRequest),
+    UnregisterPromptPattern(UnregisterPromptPatternRequest),
+    ListPromptPatterns(ListPromptPatternsRequest),
+    AcquireInputGate(AcquireInputGateRequest),
+    ReleaseInputGate(ReleaseInputGateRequest),
+    WriteInjection(WriteInjectionRequest),
+    SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycleRequest),
     TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken),
-    ListSessions(ListSessions),
-    ResolveSession(ResolveSession),
+    ListSessions(ListSessionsRequest),
+    ResolveSession(ResolveSessionRequest),
 }
 
 #[rustfmt::skip]
@@ -1064,26 +1064,26 @@ pub enum Input {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum Output {
-    TerminalReady(TerminalReady),
-    TerminalInputAccepted(TerminalInputAccepted),
-    TranscriptDelta(TranscriptDelta),
-    TerminalResized(TerminalResized),
-    TerminalCaptured(TerminalCaptured),
-    TerminalDetached(TerminalDetached),
-    TerminalExited(TerminalExited),
-    TerminalRejected(TerminalRejected),
-    PromptPatternRegistered(PromptPatternRegistered),
-    PromptPatternUnregistered(PromptPatternUnregistered),
-    PromptPatternList(PromptPatternList),
-    GateAcquired(GateAcquired),
-    GateBusy(GateBusy),
-    GateReleased(GateReleased),
-    InjectionAck(InjectionAck),
-    InjectionRejected(InjectionRejected),
-    TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot),
-    SubscriptionRetracted(SubscriptionRetracted),
-    SessionList(SessionList),
-    SessionResolved(SessionResolved),
+    TerminalReady(TerminalReadyReply),
+    TerminalInputAccepted(TerminalInputAcceptedReply),
+    TranscriptDelta(TranscriptDeltaReply),
+    TerminalResized(TerminalResizedReply),
+    TerminalCaptured(TerminalCapturedReply),
+    TerminalDetached(TerminalDetachedReply),
+    TerminalExited(TerminalExitedReply),
+    TerminalRejected(TerminalRejectedReply),
+    PromptPatternRegistered(PromptPatternRegisteredReply),
+    PromptPatternUnregistered(PromptPatternUnregisteredReply),
+    PromptPatternList(PromptPatternListReply),
+    GateAcquired(GateAcquiredReply),
+    GateBusy(GateBusyReply),
+    GateReleased(GateReleasedReply),
+    InjectionAck(InjectionAckReply),
+    InjectionRejected(InjectionRejectedReply),
+    TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshotReply),
+    SubscriptionRetracted(SubscriptionRetractedReply),
+    SessionList(SessionListReply),
+    SessionResolved(SessionResolvedReply),
     Event(TerminalEvent),
 }
 
@@ -1981,7 +1981,7 @@ impl From<InputGateLeaseIdentifier> for InputGateLease {
 }
 
 #[rustfmt::skip]
-impl TerminalConnection {
+impl TerminalConnectionRequest {
     pub fn new(payload: Terminal) -> Self {
         Self(payload)
     }
@@ -1993,14 +1993,14 @@ impl TerminalConnection {
     }
 }
 #[rustfmt::skip]
-impl From<Terminal> for TerminalConnection {
+impl From<Terminal> for TerminalConnectionRequest {
     fn from(payload: Terminal) -> Self {
         Self::new(payload)
     }
 }
 
 #[rustfmt::skip]
-impl TerminalCapture {
+impl TerminalCaptureRequest {
     pub fn new(payload: Terminal) -> Self {
         Self(payload)
     }
@@ -2012,14 +2012,14 @@ impl TerminalCapture {
     }
 }
 #[rustfmt::skip]
-impl From<Terminal> for TerminalCapture {
+impl From<Terminal> for TerminalCaptureRequest {
     fn from(payload: Terminal) -> Self {
         Self::new(payload)
     }
 }
 
 #[rustfmt::skip]
-impl ListPromptPatterns {
+impl ListPromptPatternsRequest {
     pub fn new(payload: Terminal) -> Self {
         Self(payload)
     }
@@ -2031,14 +2031,14 @@ impl ListPromptPatterns {
     }
 }
 #[rustfmt::skip]
-impl From<Terminal> for ListPromptPatterns {
+impl From<Terminal> for ListPromptPatternsRequest {
     fn from(payload: Terminal) -> Self {
         Self::new(payload)
     }
 }
 
 #[rustfmt::skip]
-impl SubscribeTerminalWorkerLifecycle {
+impl SubscribeTerminalWorkerLifecycleRequest {
     pub fn new(payload: Terminal) -> Self {
         Self(payload)
     }
@@ -2050,7 +2050,7 @@ impl SubscribeTerminalWorkerLifecycle {
     }
 }
 #[rustfmt::skip]
-impl From<Terminal> for SubscribeTerminalWorkerLifecycle {
+impl From<Terminal> for SubscribeTerminalWorkerLifecycleRequest {
     fn from(payload: Terminal) -> Self {
         Self::new(payload)
     }
@@ -2076,7 +2076,7 @@ impl From<Terminal> for TerminalWorkerLifecycleToken {
 }
 
 #[rustfmt::skip]
-impl ResolveSession {
+impl ResolveSessionRequest {
     pub fn new(payload: Name) -> Self {
         Self(payload)
     }
@@ -2088,14 +2088,14 @@ impl ResolveSession {
     }
 }
 #[rustfmt::skip]
-impl From<Name> for ResolveSession {
+impl From<Name> for ResolveSessionRequest {
     fn from(payload: Name) -> Self {
         Self::new(payload)
     }
 }
 
 #[rustfmt::skip]
-impl SubscriptionRetracted {
+impl SubscriptionRetractedReply {
     pub fn new(payload: Token) -> Self {
         Self(payload)
     }
@@ -2107,14 +2107,14 @@ impl SubscriptionRetracted {
     }
 }
 #[rustfmt::skip]
-impl From<Token> for SubscriptionRetracted {
+impl From<Token> for SubscriptionRetractedReply {
     fn from(payload: Token) -> Self {
         Self::new(payload)
     }
 }
 
 #[rustfmt::skip]
-impl SessionList {
+impl SessionListReply {
     pub fn new(payload: SessionEntries) -> Self {
         Self(payload)
     }
@@ -2126,7 +2126,7 @@ impl SessionList {
     }
 }
 #[rustfmt::skip]
-impl From<SessionEntries> for SessionList {
+impl From<SessionEntries> for SessionListReply {
     fn from(payload: SessionEntries) -> Self {
         Self::new(payload)
     }
@@ -2204,7 +2204,7 @@ impl TerminalWorkerLifecycle {
 #[rustfmt::skip]
 impl TerminalEvent {
     pub fn terminal_worker_lifecycle_event(
-        payload: TerminalWorkerLifecycleEvent,
+        payload: TerminalWorkerLifecycleEventPayload,
     ) -> Self {
         Self::TerminalWorkerLifecycleEvent(payload)
     }
@@ -2213,41 +2213,41 @@ impl TerminalEvent {
 #[rustfmt::skip]
 impl Input {
     pub fn terminal_connection(payload: Terminal) -> Self {
-        Self::TerminalConnection(TerminalConnection::new(payload))
+        Self::TerminalConnection(TerminalConnectionRequest::new(payload))
     }
-    pub fn terminal_input(payload: TerminalInput) -> Self {
+    pub fn terminal_input(payload: TerminalInputRequest) -> Self {
         Self::TerminalInput(payload)
     }
-    pub fn terminal_resize(payload: TerminalResize) -> Self {
+    pub fn terminal_resize(payload: TerminalResizeRequest) -> Self {
         Self::TerminalResize(payload)
     }
-    pub fn terminal_detachment(payload: TerminalDetachment) -> Self {
+    pub fn terminal_detachment(payload: TerminalDetachmentRequest) -> Self {
         Self::TerminalDetachment(payload)
     }
     pub fn terminal_capture(payload: Terminal) -> Self {
-        Self::TerminalCapture(TerminalCapture::new(payload))
+        Self::TerminalCapture(TerminalCaptureRequest::new(payload))
     }
-    pub fn register_prompt_pattern(payload: RegisterPromptPattern) -> Self {
+    pub fn register_prompt_pattern(payload: RegisterPromptPatternRequest) -> Self {
         Self::RegisterPromptPattern(payload)
     }
-    pub fn unregister_prompt_pattern(payload: UnregisterPromptPattern) -> Self {
+    pub fn unregister_prompt_pattern(payload: UnregisterPromptPatternRequest) -> Self {
         Self::UnregisterPromptPattern(payload)
     }
     pub fn list_prompt_patterns(payload: Terminal) -> Self {
-        Self::ListPromptPatterns(ListPromptPatterns::new(payload))
+        Self::ListPromptPatterns(ListPromptPatternsRequest::new(payload))
     }
-    pub fn acquire_input_gate(payload: AcquireInputGate) -> Self {
+    pub fn acquire_input_gate(payload: AcquireInputGateRequest) -> Self {
         Self::AcquireInputGate(payload)
     }
-    pub fn release_input_gate(payload: ReleaseInputGate) -> Self {
+    pub fn release_input_gate(payload: ReleaseInputGateRequest) -> Self {
         Self::ReleaseInputGate(payload)
     }
-    pub fn write_injection(payload: WriteInjection) -> Self {
+    pub fn write_injection(payload: WriteInjectionRequest) -> Self {
         Self::WriteInjection(payload)
     }
     pub fn subscribe_terminal_worker_lifecycle(payload: Terminal) -> Self {
         Self::SubscribeTerminalWorkerLifecycle(
-            SubscribeTerminalWorkerLifecycle::new(payload),
+            SubscribeTerminalWorkerLifecycleRequest::new(payload),
         )
     }
     pub fn terminal_worker_lifecycle_retraction(payload: Terminal) -> Self {
@@ -2255,76 +2255,76 @@ impl Input {
             TerminalWorkerLifecycleToken::new(payload),
         )
     }
-    pub fn list_sessions(payload: ListSessions) -> Self {
+    pub fn list_sessions(payload: ListSessionsRequest) -> Self {
         Self::ListSessions(payload)
     }
     pub fn resolve_session(payload: Name) -> Self {
-        Self::ResolveSession(ResolveSession::new(payload))
+        Self::ResolveSession(ResolveSessionRequest::new(payload))
     }
 }
 
 #[rustfmt::skip]
 impl Output {
-    pub fn terminal_ready(payload: TerminalReady) -> Self {
+    pub fn terminal_ready(payload: TerminalReadyReply) -> Self {
         Self::TerminalReady(payload)
     }
-    pub fn terminal_input_accepted(payload: TerminalInputAccepted) -> Self {
+    pub fn terminal_input_accepted(payload: TerminalInputAcceptedReply) -> Self {
         Self::TerminalInputAccepted(payload)
     }
-    pub fn transcript_delta(payload: TranscriptDelta) -> Self {
+    pub fn transcript_delta(payload: TranscriptDeltaReply) -> Self {
         Self::TranscriptDelta(payload)
     }
-    pub fn terminal_resized(payload: TerminalResized) -> Self {
+    pub fn terminal_resized(payload: TerminalResizedReply) -> Self {
         Self::TerminalResized(payload)
     }
-    pub fn terminal_captured(payload: TerminalCaptured) -> Self {
+    pub fn terminal_captured(payload: TerminalCapturedReply) -> Self {
         Self::TerminalCaptured(payload)
     }
-    pub fn terminal_detached(payload: TerminalDetached) -> Self {
+    pub fn terminal_detached(payload: TerminalDetachedReply) -> Self {
         Self::TerminalDetached(payload)
     }
-    pub fn terminal_exited(payload: TerminalExited) -> Self {
+    pub fn terminal_exited(payload: TerminalExitedReply) -> Self {
         Self::TerminalExited(payload)
     }
-    pub fn terminal_rejected(payload: TerminalRejected) -> Self {
+    pub fn terminal_rejected(payload: TerminalRejectedReply) -> Self {
         Self::TerminalRejected(payload)
     }
-    pub fn prompt_pattern_registered(payload: PromptPatternRegistered) -> Self {
+    pub fn prompt_pattern_registered(payload: PromptPatternRegisteredReply) -> Self {
         Self::PromptPatternRegistered(payload)
     }
-    pub fn prompt_pattern_unregistered(payload: PromptPatternUnregistered) -> Self {
+    pub fn prompt_pattern_unregistered(payload: PromptPatternUnregisteredReply) -> Self {
         Self::PromptPatternUnregistered(payload)
     }
-    pub fn prompt_pattern_list(payload: PromptPatternList) -> Self {
+    pub fn prompt_pattern_list(payload: PromptPatternListReply) -> Self {
         Self::PromptPatternList(payload)
     }
-    pub fn gate_acquired(payload: GateAcquired) -> Self {
+    pub fn gate_acquired(payload: GateAcquiredReply) -> Self {
         Self::GateAcquired(payload)
     }
-    pub fn gate_busy(payload: GateBusy) -> Self {
+    pub fn gate_busy(payload: GateBusyReply) -> Self {
         Self::GateBusy(payload)
     }
-    pub fn gate_released(payload: GateReleased) -> Self {
+    pub fn gate_released(payload: GateReleasedReply) -> Self {
         Self::GateReleased(payload)
     }
-    pub fn injection_ack(payload: InjectionAck) -> Self {
+    pub fn injection_ack(payload: InjectionAckReply) -> Self {
         Self::InjectionAck(payload)
     }
-    pub fn injection_rejected(payload: InjectionRejected) -> Self {
+    pub fn injection_rejected(payload: InjectionRejectedReply) -> Self {
         Self::InjectionRejected(payload)
     }
     pub fn terminal_worker_lifecycle_snapshot(
-        payload: TerminalWorkerLifecycleSnapshot,
+        payload: TerminalWorkerLifecycleSnapshotReply,
     ) -> Self {
         Self::TerminalWorkerLifecycleSnapshot(payload)
     }
     pub fn subscription_retracted(payload: Token) -> Self {
-        Self::SubscriptionRetracted(SubscriptionRetracted::new(payload))
+        Self::SubscriptionRetracted(SubscriptionRetractedReply::new(payload))
     }
     pub fn session_list(payload: SessionEntries) -> Self {
-        Self::SessionList(SessionList::new(payload))
+        Self::SessionList(SessionListReply::new(payload))
     }
-    pub fn session_resolved(payload: SessionResolved) -> Self {
+    pub fn session_resolved(payload: SessionResolvedReply) -> Self {
         Self::SessionResolved(payload)
     }
     pub fn event(payload: TerminalEvent) -> Self {
@@ -2382,92 +2382,92 @@ impl From<TerminalWorkerStop> for TerminalWorkerLifecycle {
 }
 
 #[rustfmt::skip]
-impl From<TerminalWorkerLifecycleEvent> for TerminalEvent {
-    fn from(payload: TerminalWorkerLifecycleEvent) -> Self {
+impl From<TerminalWorkerLifecycleEventPayload> for TerminalEvent {
+    fn from(payload: TerminalWorkerLifecycleEventPayload) -> Self {
         Self::TerminalWorkerLifecycleEvent(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalConnection> for Input {
-    fn from(payload: TerminalConnection) -> Self {
+impl From<TerminalConnectionRequest> for Input {
+    fn from(payload: TerminalConnectionRequest) -> Self {
         Self::TerminalConnection(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalInput> for Input {
-    fn from(payload: TerminalInput) -> Self {
+impl From<TerminalInputRequest> for Input {
+    fn from(payload: TerminalInputRequest) -> Self {
         Self::TerminalInput(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalResize> for Input {
-    fn from(payload: TerminalResize) -> Self {
+impl From<TerminalResizeRequest> for Input {
+    fn from(payload: TerminalResizeRequest) -> Self {
         Self::TerminalResize(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalDetachment> for Input {
-    fn from(payload: TerminalDetachment) -> Self {
+impl From<TerminalDetachmentRequest> for Input {
+    fn from(payload: TerminalDetachmentRequest) -> Self {
         Self::TerminalDetachment(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalCapture> for Input {
-    fn from(payload: TerminalCapture) -> Self {
+impl From<TerminalCaptureRequest> for Input {
+    fn from(payload: TerminalCaptureRequest) -> Self {
         Self::TerminalCapture(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<RegisterPromptPattern> for Input {
-    fn from(payload: RegisterPromptPattern) -> Self {
+impl From<RegisterPromptPatternRequest> for Input {
+    fn from(payload: RegisterPromptPatternRequest) -> Self {
         Self::RegisterPromptPattern(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<UnregisterPromptPattern> for Input {
-    fn from(payload: UnregisterPromptPattern) -> Self {
+impl From<UnregisterPromptPatternRequest> for Input {
+    fn from(payload: UnregisterPromptPatternRequest) -> Self {
         Self::UnregisterPromptPattern(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<ListPromptPatterns> for Input {
-    fn from(payload: ListPromptPatterns) -> Self {
+impl From<ListPromptPatternsRequest> for Input {
+    fn from(payload: ListPromptPatternsRequest) -> Self {
         Self::ListPromptPatterns(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<AcquireInputGate> for Input {
-    fn from(payload: AcquireInputGate) -> Self {
+impl From<AcquireInputGateRequest> for Input {
+    fn from(payload: AcquireInputGateRequest) -> Self {
         Self::AcquireInputGate(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<ReleaseInputGate> for Input {
-    fn from(payload: ReleaseInputGate) -> Self {
+impl From<ReleaseInputGateRequest> for Input {
+    fn from(payload: ReleaseInputGateRequest) -> Self {
         Self::ReleaseInputGate(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<WriteInjection> for Input {
-    fn from(payload: WriteInjection) -> Self {
+impl From<WriteInjectionRequest> for Input {
+    fn from(payload: WriteInjectionRequest) -> Self {
         Self::WriteInjection(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<SubscribeTerminalWorkerLifecycle> for Input {
-    fn from(payload: SubscribeTerminalWorkerLifecycle) -> Self {
+impl From<SubscribeTerminalWorkerLifecycleRequest> for Input {
+    fn from(payload: SubscribeTerminalWorkerLifecycleRequest) -> Self {
         Self::SubscribeTerminalWorkerLifecycle(payload)
     }
 }
@@ -2480,155 +2480,155 @@ impl From<TerminalWorkerLifecycleToken> for Input {
 }
 
 #[rustfmt::skip]
-impl From<ListSessions> for Input {
-    fn from(payload: ListSessions) -> Self {
+impl From<ListSessionsRequest> for Input {
+    fn from(payload: ListSessionsRequest) -> Self {
         Self::ListSessions(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<ResolveSession> for Input {
-    fn from(payload: ResolveSession) -> Self {
+impl From<ResolveSessionRequest> for Input {
+    fn from(payload: ResolveSessionRequest) -> Self {
         Self::ResolveSession(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalReady> for Output {
-    fn from(payload: TerminalReady) -> Self {
+impl From<TerminalReadyReply> for Output {
+    fn from(payload: TerminalReadyReply) -> Self {
         Self::TerminalReady(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalInputAccepted> for Output {
-    fn from(payload: TerminalInputAccepted) -> Self {
+impl From<TerminalInputAcceptedReply> for Output {
+    fn from(payload: TerminalInputAcceptedReply) -> Self {
         Self::TerminalInputAccepted(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TranscriptDelta> for Output {
-    fn from(payload: TranscriptDelta) -> Self {
+impl From<TranscriptDeltaReply> for Output {
+    fn from(payload: TranscriptDeltaReply) -> Self {
         Self::TranscriptDelta(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalResized> for Output {
-    fn from(payload: TerminalResized) -> Self {
+impl From<TerminalResizedReply> for Output {
+    fn from(payload: TerminalResizedReply) -> Self {
         Self::TerminalResized(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalCaptured> for Output {
-    fn from(payload: TerminalCaptured) -> Self {
+impl From<TerminalCapturedReply> for Output {
+    fn from(payload: TerminalCapturedReply) -> Self {
         Self::TerminalCaptured(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalDetached> for Output {
-    fn from(payload: TerminalDetached) -> Self {
+impl From<TerminalDetachedReply> for Output {
+    fn from(payload: TerminalDetachedReply) -> Self {
         Self::TerminalDetached(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalExited> for Output {
-    fn from(payload: TerminalExited) -> Self {
+impl From<TerminalExitedReply> for Output {
+    fn from(payload: TerminalExitedReply) -> Self {
         Self::TerminalExited(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalRejected> for Output {
-    fn from(payload: TerminalRejected) -> Self {
+impl From<TerminalRejectedReply> for Output {
+    fn from(payload: TerminalRejectedReply) -> Self {
         Self::TerminalRejected(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<PromptPatternRegistered> for Output {
-    fn from(payload: PromptPatternRegistered) -> Self {
+impl From<PromptPatternRegisteredReply> for Output {
+    fn from(payload: PromptPatternRegisteredReply) -> Self {
         Self::PromptPatternRegistered(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<PromptPatternUnregistered> for Output {
-    fn from(payload: PromptPatternUnregistered) -> Self {
+impl From<PromptPatternUnregisteredReply> for Output {
+    fn from(payload: PromptPatternUnregisteredReply) -> Self {
         Self::PromptPatternUnregistered(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<PromptPatternList> for Output {
-    fn from(payload: PromptPatternList) -> Self {
+impl From<PromptPatternListReply> for Output {
+    fn from(payload: PromptPatternListReply) -> Self {
         Self::PromptPatternList(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<GateAcquired> for Output {
-    fn from(payload: GateAcquired) -> Self {
+impl From<GateAcquiredReply> for Output {
+    fn from(payload: GateAcquiredReply) -> Self {
         Self::GateAcquired(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<GateBusy> for Output {
-    fn from(payload: GateBusy) -> Self {
+impl From<GateBusyReply> for Output {
+    fn from(payload: GateBusyReply) -> Self {
         Self::GateBusy(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<GateReleased> for Output {
-    fn from(payload: GateReleased) -> Self {
+impl From<GateReleasedReply> for Output {
+    fn from(payload: GateReleasedReply) -> Self {
         Self::GateReleased(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<InjectionAck> for Output {
-    fn from(payload: InjectionAck) -> Self {
+impl From<InjectionAckReply> for Output {
+    fn from(payload: InjectionAckReply) -> Self {
         Self::InjectionAck(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<InjectionRejected> for Output {
-    fn from(payload: InjectionRejected) -> Self {
+impl From<InjectionRejectedReply> for Output {
+    fn from(payload: InjectionRejectedReply) -> Self {
         Self::InjectionRejected(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<TerminalWorkerLifecycleSnapshot> for Output {
-    fn from(payload: TerminalWorkerLifecycleSnapshot) -> Self {
+impl From<TerminalWorkerLifecycleSnapshotReply> for Output {
+    fn from(payload: TerminalWorkerLifecycleSnapshotReply) -> Self {
         Self::TerminalWorkerLifecycleSnapshot(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<SubscriptionRetracted> for Output {
-    fn from(payload: SubscriptionRetracted) -> Self {
+impl From<SubscriptionRetractedReply> for Output {
+    fn from(payload: SubscriptionRetractedReply) -> Self {
         Self::SubscriptionRetracted(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<SessionList> for Output {
-    fn from(payload: SessionList) -> Self {
+impl From<SessionListReply> for Output {
+    fn from(payload: SessionListReply) -> Self {
         Self::SessionList(payload)
     }
 }
 
 #[rustfmt::skip]
-impl From<SessionResolved> for Output {
-    fn from(payload: SessionResolved) -> Self {
+impl From<SessionResolvedReply> for Output {
+    fn from(payload: SessionResolvedReply) -> Self {
         Self::SessionResolved(payload)
     }
 }
@@ -3116,9 +3116,9 @@ impl signal_frame::LogVariant for Input {
     }
 }
 #[rustfmt::skip]
-pub type Frame = signal_frame::StreamingFrame<Input, Output, TerminalEvent>;
+pub type Frame = signal_frame::ExchangeFrame<Input, Output>;
 #[rustfmt::skip]
-pub type FrameBody = signal_frame::StreamingFrameBody<Input, Output, TerminalEvent>;
+pub type FrameBody = signal_frame::ExchangeFrameBody<Input, Output>;
 #[rustfmt::skip]
 pub type Request = signal_frame::Request<Input>;
 #[rustfmt::skip]
@@ -3151,24 +3151,6 @@ impl Output {
             FrameBody::Reply {
                 exchange,
                 reply,
-            },
-        )
-    }
-}
-
-#[rustfmt::skip]
-impl TerminalEvent {
-    pub fn into_subscription_frame(
-        self,
-        event_identifier: signal_frame::StreamEventIdentifier,
-        token: signal_frame::SubscriptionTokenInner,
-    ) -> Frame {
-        Frame::with_short_header(
-            signal_frame::ShortHeader::new(short_header::OUTPUT_EVENT),
-            FrameBody::SubscriptionEvent {
-                event_identifier,
-                token,
-                event: self,
             },
         )
     }

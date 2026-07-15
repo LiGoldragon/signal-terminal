@@ -5,7 +5,7 @@ use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
 use signal_terminal::TerminalIntrospectionSnapshot;
 use signal_terminal::{
     Output, TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState,
-    TerminalEventObservation, TerminalGeneration, TerminalInputAccepted, TerminalName,
+    TerminalEventObservation, TerminalGeneration, TerminalInputAcceptedReply, TerminalName,
     TerminalObservationSequence, TerminalOperationKind, TerminalSessionArchiveObservation,
     TerminalSessionArchiveState, TerminalSessionHealthObservation, TerminalSessionObservation,
     TerminalSessionState, TerminalViewerAttachmentObservation, TerminalViewerAttachmentState,
@@ -114,7 +114,7 @@ fn terminal_delivery_attempt_observation_round_trips() {
 
 #[test]
 fn terminal_event_observation_round_trips() {
-    let event = Output::from(TerminalInputAccepted {
+    let event = Output::from(TerminalInputAcceptedReply {
         terminal: terminal().into(),
         generation: TerminalGeneration::new(3).into(),
     });

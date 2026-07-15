@@ -3,31 +3,34 @@
 //!
 //! Each test names exactly what shape it pins down; per the
 //! "blunt test names" convention. The wire form is the schema-rust
-//! emission on the `signal_frame::StreamingFrame` envelope.
+//! emission on the current `signal_frame::ExchangeFrame` envelope.
 
 #[cfg(feature = "nota-text")]
 use nota::{NotaDecode, NotaEncode, NotaSource};
 use signal_frame::{
     ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
-    SignalOperationHeads, StreamEventIdentifier, SubReply, SubscriptionTokenInner,
+    SignalOperationHeads, SubReply,
 };
 use signal_terminal::{
-    AcquireInputGate, ExitCode, Frame, FrameBody, GateAcquired, GateBusy, GateReleased,
-    InjectionAck, InjectionRejected, InjectionRejectionReason, Input, InputGateLease,
-    InputGateLeaseIdentifier, InputGateReason, ListPromptPatterns, ListSessions, Output,
-    OwnerIdentity, PromptPattern, PromptPatternBytes, PromptPatternEntry, PromptPatternIdentifier,
-    PromptPatternList, PromptPatternRegistered, PromptPatternUnregistered, PromptState,
-    RegisterPromptPattern, ReleaseInputGate, ResolveSession, SessionEntry, SessionList,
-    SessionResolved, SocketMode, SubscribeTerminalWorkerLifecycle, SubscriptionRetracted,
-    TerminalByteCount, TerminalCapture, TerminalCaptured, TerminalColumns, TerminalConnection,
-    TerminalDaemonConfiguration, TerminalDetached, TerminalDetachment, TerminalDetachmentReason,
-    TerminalEvent, TerminalExitStatus, TerminalExited, TerminalGeneration, TerminalInput,
-    TerminalInputAccepted, TerminalInputBytes, TerminalName, TerminalOperationKind, TerminalReady,
-    TerminalRejected, TerminalRejectionReason, TerminalResize, TerminalResized, TerminalRows,
-    TerminalSequence, TerminalSignalNumber, TerminalTranscriptBytes, TerminalWorkerKind,
-    TerminalWorkerLifecycle, TerminalWorkerLifecycleEvent, TerminalWorkerLifecycleSnapshot,
-    TerminalWorkerLifecycleToken, TerminalWorkerStop, TerminalWorkerStopReason, TranscriptDelta,
-    UnixUserIdentifier, UnregisterPromptPattern, WirePath, WorkerFailureDetail, WriteInjection,
+    AcquireInputGateRequest, ExitCode, Frame, FrameBody, GateAcquiredReply, GateBusyReply,
+    GateReleasedReply, InjectionAckReply, InjectionRejectedReply, InjectionRejectionReason, Input,
+    InputGateLease, InputGateLeaseIdentifier, InputGateReason, ListPromptPatternsRequest,
+    ListSessionsRequest, Output, OwnerIdentity, PromptPattern, PromptPatternBytes,
+    PromptPatternEntry, PromptPatternIdentifier, PromptPatternListReply,
+    PromptPatternRegisteredReply, PromptPatternUnregisteredReply, PromptState,
+    RegisterPromptPatternRequest, ReleaseInputGateRequest, ResolveSessionRequest, SessionEntry,
+    SessionListReply, SessionResolvedReply, SocketMode, SubscribeTerminalWorkerLifecycleRequest,
+    SubscriptionRetractedReply, TerminalByteCount, TerminalCaptureRequest, TerminalCapturedReply,
+    TerminalColumns, TerminalConnectionRequest, TerminalDaemonConfiguration, TerminalDetachedReply,
+    TerminalDetachmentReason, TerminalDetachmentRequest, TerminalEvent, TerminalExitStatus,
+    TerminalExitedReply, TerminalGeneration, TerminalInputAcceptedReply, TerminalInputBytes,
+    TerminalInputRequest, TerminalName, TerminalOperationKind, TerminalReadyReply,
+    TerminalRejectedReply, TerminalRejectionReason, TerminalResizeRequest, TerminalResizedReply,
+    TerminalRows, TerminalSequence, TerminalSignalNumber, TerminalTranscriptBytes,
+    TerminalWorkerKind, TerminalWorkerLifecycle, TerminalWorkerLifecycleEventPayload,
+    TerminalWorkerLifecycleSnapshotReply, TerminalWorkerLifecycleToken, TerminalWorkerStop,
+    TerminalWorkerStopReason, TranscriptDeltaReply, UnixUserIdentifier,
+    UnregisterPromptPatternRequest, WirePath, WorkerFailureDetail, WriteInjectionRequest,
 };
 
 fn terminal() -> TerminalName {
@@ -62,14 +65,6 @@ fn exchange() -> ExchangeIdentifier {
     ExchangeIdentifier::new(
         SessionEpoch::new(1),
         ExchangeLane::Connector,
-        LaneSequence::first(),
-    )
-}
-
-fn stream_event() -> StreamEventIdentifier {
-    StreamEventIdentifier::new(
-        SessionEpoch::new(1),
-        ExchangeLane::Acceptor,
         LaneSequence::first(),
     )
 }
@@ -114,16 +109,9 @@ fn round_trip_reply(reply: Output) -> Output {
 }
 
 fn round_trip_event(event: TerminalEvent) -> TerminalEvent {
-    let frame = Frame::new(FrameBody::SubscriptionEvent {
-        event_identifier: stream_event(),
-        token: SubscriptionTokenInner::new(1),
-        event,
-    });
-    let bytes = frame.encode_length_prefixed().expect("encode");
-    let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
-    match decoded.into_body() {
-        FrameBody::SubscriptionEvent { event, .. } => event,
-        other => panic!("expected subscription event, got {other:?}"),
+    match round_trip_reply(Output::Event(event)) {
+        Output::Event(event) => event,
+        other => panic!("expected event reply payload, got {other:?}"),
     }
 }
 
@@ -144,57 +132,57 @@ where
 #[test]
 fn every_request_round_trips_through_length_prefixed_frame() {
     let requests = [
-        Input::TerminalConnection(TerminalConnection::new(terminal().into())),
-        Input::TerminalInput(TerminalInput {
+        Input::TerminalConnection(TerminalConnectionRequest::new(terminal().into())),
+        Input::TerminalInput(TerminalInputRequest {
             terminal: terminal().into(),
             input_bytes: input_bytes().into(),
         }),
-        Input::TerminalResize(TerminalResize {
+        Input::TerminalResize(TerminalResizeRequest {
             terminal: terminal().into(),
             rows: TerminalRows::new(24).into(),
             columns: TerminalColumns::new(80).into(),
         }),
-        Input::TerminalDetachment(TerminalDetachment {
+        Input::TerminalDetachment(TerminalDetachmentRequest {
             terminal: terminal().into(),
             terminal_detachment_reason: TerminalDetachmentReason::HarnessStopped,
         }),
-        Input::TerminalCapture(TerminalCapture::new(terminal().into())),
-        Input::RegisterPromptPattern(RegisterPromptPattern {
+        Input::TerminalCapture(TerminalCaptureRequest::new(terminal().into())),
+        Input::RegisterPromptPattern(RegisterPromptPatternRequest {
             terminal: terminal().into(),
             pattern: PromptPattern::LiteralSuffix(PromptPatternBytes::new(vec![36, 32])).into(),
         }),
-        Input::UnregisterPromptPattern(UnregisterPromptPattern {
+        Input::UnregisterPromptPattern(UnregisterPromptPatternRequest {
             terminal: terminal().into(),
             pattern_identifier: prompt_pattern_identifier().into(),
         }),
-        Input::ListPromptPatterns(ListPromptPatterns::new(terminal().into())),
-        Input::AcquireInputGate(AcquireInputGate {
+        Input::ListPromptPatterns(ListPromptPatternsRequest::new(terminal().into())),
+        Input::AcquireInputGate(AcquireInputGateRequest {
             terminal: terminal().into(),
             input_gate_reason: InputGateReason::new("inject".to_owned()),
             prompt_pattern_identifier_selection: Some(prompt_pattern_identifier()).into(),
         }),
-        Input::AcquireInputGate(AcquireInputGate {
+        Input::AcquireInputGate(AcquireInputGateRequest {
             terminal: terminal().into(),
             input_gate_reason: InputGateReason::new("inject".to_owned()),
             prompt_pattern_identifier_selection: None.into(),
         }),
-        Input::ReleaseInputGate(ReleaseInputGate {
+        Input::ReleaseInputGate(ReleaseInputGateRequest {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
         }),
-        Input::WriteInjection(WriteInjection {
+        Input::WriteInjection(WriteInjectionRequest {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
             input_bytes: input_bytes().into(),
         }),
-        Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycle::new(
+        Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycleRequest::new(
             terminal().into(),
         )),
         Input::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken::new(
             terminal().into(),
         )),
-        Input::ListSessions(ListSessions {}),
-        Input::ResolveSession(ResolveSession::new(terminal().into())),
+        Input::ListSessions(ListSessionsRequest {}),
+        Input::ResolveSession(ResolveSessionRequest::new(terminal().into())),
     ];
 
     for request in requests {
@@ -205,63 +193,63 @@ fn every_request_round_trips_through_length_prefixed_frame() {
 #[test]
 fn every_reply_round_trips_through_length_prefixed_frame() {
     let replies = [
-        Output::TerminalReady(TerminalReady {
+        Output::TerminalReady(TerminalReadyReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(1).into(),
         }),
-        Output::TerminalInputAccepted(TerminalInputAccepted {
+        Output::TerminalInputAccepted(TerminalInputAcceptedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(1).into(),
         }),
-        Output::TranscriptDelta(TranscriptDelta {
+        Output::TranscriptDelta(TranscriptDeltaReply {
             terminal: terminal().into(),
             sequence: TerminalSequence::new(5).into(),
             transcript_bytes: transcript_bytes().into(),
         }),
-        Output::TerminalResized(TerminalResized {
+        Output::TerminalResized(TerminalResizedReply {
             terminal: terminal().into(),
             rows: TerminalRows::new(40).into(),
             columns: TerminalColumns::new(120).into(),
             generation: TerminalGeneration::new(2).into(),
         }),
-        Output::TerminalCaptured(TerminalCaptured {
+        Output::TerminalCaptured(TerminalCapturedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(2).into(),
             transcript_bytes: transcript_bytes().into(),
         }),
-        Output::TerminalDetached(TerminalDetached {
+        Output::TerminalDetached(TerminalDetachedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(2).into(),
             terminal_detachment_reason: TerminalDetachmentReason::ViewerReplaced,
         }),
-        Output::TerminalExited(TerminalExited {
+        Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(3).into(),
             terminal_exit_status: TerminalExitStatus::Exited(ExitCode::new(0)),
         }),
-        Output::TerminalExited(TerminalExited {
+        Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(3).into(),
             terminal_exit_status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
         }),
-        Output::TerminalExited(TerminalExited {
+        Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(3).into(),
             terminal_exit_status: TerminalExitStatus::StatusUnavailable,
         }),
-        Output::TerminalRejected(TerminalRejected {
+        Output::TerminalRejected(TerminalRejectedReply {
             terminal: terminal().into(),
             terminal_rejection_reason: TerminalRejectionReason::TransportFailed,
         }),
-        Output::PromptPatternRegistered(PromptPatternRegistered {
+        Output::PromptPatternRegistered(PromptPatternRegisteredReply {
             terminal: terminal().into(),
             pattern_identifier: prompt_pattern_identifier().into(),
         }),
-        Output::PromptPatternUnregistered(PromptPatternUnregistered {
+        Output::PromptPatternUnregistered(PromptPatternUnregisteredReply {
             terminal: terminal().into(),
             pattern_identifier: prompt_pattern_identifier().into(),
         }),
-        Output::PromptPatternList(PromptPatternList {
+        Output::PromptPatternList(PromptPatternListReply {
             terminal: terminal().into(),
             entries: vec![PromptPatternEntry {
                 pattern_identifier: prompt_pattern_identifier().into(),
@@ -269,30 +257,30 @@ fn every_reply_round_trips_through_length_prefixed_frame() {
             }]
             .into(),
         }),
-        Output::GateAcquired(GateAcquired {
+        Output::GateAcquired(GateAcquiredReply {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
             prompt_state: PromptState::Dirty(TerminalByteCount::new(3)),
         }),
-        Output::GateBusy(GateBusy {
+        Output::GateBusy(GateBusyReply {
             terminal: terminal().into(),
             current_holder: InputGateLeaseIdentifier::new(41).into(),
         }),
-        Output::GateReleased(GateReleased {
+        Output::GateReleased(GateReleasedReply {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
             cached_human_bytes: TerminalByteCount::new(12).into(),
         }),
-        Output::InjectionAck(InjectionAck {
+        Output::InjectionAck(InjectionAckReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(1).into(),
             sequence: TerminalSequence::new(7).into(),
         }),
-        Output::InjectionRejected(InjectionRejected {
+        Output::InjectionRejected(InjectionRejectedReply {
             terminal: terminal().into(),
             injection_rejection_reason: InjectionRejectionReason::GateNotHeld,
         }),
-        Output::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshot {
+        Output::TerminalWorkerLifecycleSnapshot(TerminalWorkerLifecycleSnapshotReply {
             terminal: terminal().into(),
             observations: vec![
                 TerminalWorkerLifecycle::Started(TerminalWorkerKind::InputWriter),
@@ -305,10 +293,10 @@ fn every_reply_round_trips_through_length_prefixed_frame() {
             ]
             .into(),
         }),
-        Output::SubscriptionRetracted(SubscriptionRetracted::new(
+        Output::SubscriptionRetracted(SubscriptionRetractedReply::new(
             TerminalWorkerLifecycleToken::new(terminal().into()).into(),
         )),
-        Output::SessionList(SessionList::new(
+        Output::SessionList(SessionListReply::new(
             vec![
                 SessionEntry {
                     name: terminal().into(),
@@ -321,7 +309,7 @@ fn every_reply_round_trips_through_length_prefixed_frame() {
             ]
             .into(),
         )),
-        Output::SessionResolved(SessionResolved {
+        Output::SessionResolved(SessionResolvedReply {
             name: terminal().into(),
             data_socket_path: data_socket_path("operator").into(),
         }),
@@ -333,8 +321,8 @@ fn every_reply_round_trips_through_length_prefixed_frame() {
 }
 
 #[test]
-fn worker_lifecycle_event_round_trips_through_subscription_frame() {
-    let event = TerminalEvent::TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEvent {
+fn worker_lifecycle_event_round_trips_through_exchange_reply() {
+    let event = TerminalEvent::TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEventPayload {
         terminal: terminal().into(),
         observation: TerminalWorkerLifecycle::Stopped(TerminalWorkerStop {
             terminal_worker_kind: TerminalWorkerKind::ChildExitWatcher,
@@ -350,7 +338,7 @@ fn worker_lifecycle_event_round_trips_through_subscription_frame() {
 
 #[test]
 fn payload_lift_into_request_uses_generated_from() {
-    let payload = TerminalConnection::new(terminal().into());
+    let payload = TerminalConnectionRequest::new(terminal().into());
     let request: Input = payload.clone().into();
     assert_eq!(request, Input::TerminalConnection(payload));
 
@@ -362,7 +350,7 @@ fn payload_lift_into_request_uses_generated_from() {
 
 #[test]
 fn payload_lift_into_reply_uses_generated_from() {
-    let payload = TerminalReady {
+    let payload = TerminalReadyReply {
         terminal: terminal().into(),
         generation: TerminalGeneration::new(4).into(),
     };
@@ -372,7 +360,7 @@ fn payload_lift_into_reply_uses_generated_from() {
 
 #[test]
 fn event_lifts_into_output_and_terminal_event() {
-    let payload = TerminalWorkerLifecycleEvent {
+    let payload = TerminalWorkerLifecycleEventPayload {
         terminal: terminal().into(),
         observation: TerminalWorkerLifecycle::Started(TerminalWorkerKind::SocketAcceptLoop).into(),
     };
@@ -389,11 +377,12 @@ fn event_lifts_into_output_and_terminal_event() {
 #[test]
 fn input_exposes_contract_owned_operation_kind() {
     assert_eq!(
-        Input::TerminalConnection(TerminalConnection::new(terminal().into())).operation_kind(),
+        Input::TerminalConnection(TerminalConnectionRequest::new(terminal().into()))
+            .operation_kind(),
         TerminalOperationKind::TerminalConnection
     );
     assert_eq!(
-        Input::WriteInjection(WriteInjection {
+        Input::WriteInjection(WriteInjectionRequest {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
             input_bytes: input_bytes().into(),
@@ -409,7 +398,7 @@ fn input_exposes_contract_owned_operation_kind() {
         TerminalOperationKind::TerminalWorkerLifecycleRetraction
     );
     assert_eq!(
-        Input::ListSessions(ListSessions {}).operation_kind(),
+        Input::ListSessions(ListSessionsRequest {}).operation_kind(),
         TerminalOperationKind::ListSessions
     );
 }
@@ -442,7 +431,7 @@ fn input_variants_declare_contract_local_operation_heads() {
 #[test]
 fn remodeled_enum_variants_round_trip_through_nota_text() {
     round_trip_nota(
-        Output::TerminalExited(TerminalExited {
+        Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(2).into(),
             terminal_exit_status: TerminalExitStatus::Exited(ExitCode::new(0)),
@@ -450,7 +439,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
         "(TerminalExited (operator 2 (Exited 0)))",
     );
     round_trip_nota(
-        Output::TerminalExited(TerminalExited {
+        Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(2).into(),
             terminal_exit_status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
@@ -458,7 +447,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
         "(TerminalExited (operator 2 (Signaled 9)))",
     );
     round_trip_nota(
-        Output::GateAcquired(GateAcquired {
+        Output::GateAcquired(GateAcquiredReply {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
             prompt_state: PromptState::Dirty(TerminalByteCount::new(3)),
@@ -480,7 +469,7 @@ fn remodeled_enum_variants_round_trip_through_nota_text() {
 #[test]
 fn byte_fields_carry_one_integer_per_byte_on_the_wire() {
     round_trip_nota(
-        Input::TerminalInput(TerminalInput {
+        Input::TerminalInput(TerminalInputRequest {
             terminal: terminal().into(),
             input_bytes: input_bytes().into(),
         }),

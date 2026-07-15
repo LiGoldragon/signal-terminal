@@ -4,156 +4,158 @@
 ;; in the terminal daemon and terminal-cell, never here. SELF-CONTAINED VOCABULARY: socket/owner
 ;; helper types are declared locally (no signal-engine-management / signal-persona-origin imports).
 
-[(TerminalConnection TerminalConnection)
- (TerminalInput TerminalInput)
- (TerminalResize TerminalResize)
- (TerminalDetachment TerminalDetachment)
- (TerminalCapture TerminalCapture)
- (RegisterPromptPattern RegisterPromptPattern)
- (UnregisterPromptPattern UnregisterPromptPattern)
- (ListPromptPatterns ListPromptPatterns)
- (AcquireInputGate AcquireInputGate)
- (ReleaseInputGate ReleaseInputGate)
- (WriteInjection WriteInjection)
- (SubscribeTerminalWorkerLifecycle SubscribeTerminalWorkerLifecycle opens TerminalWorkerLifecycleStream)
- (TerminalWorkerLifecycleRetraction TerminalWorkerLifecycleToken)
- (ListSessions ListSessions)
- (ResolveSession ResolveSession)]
-[(TerminalReady TerminalReady)
- (TerminalInputAccepted TerminalInputAccepted)
- (TranscriptDelta TranscriptDelta)
- (TerminalResized TerminalResized)
- (TerminalCaptured TerminalCaptured)
- (TerminalDetached TerminalDetached)
- (TerminalExited TerminalExited)
- (TerminalRejected TerminalRejected)
- (PromptPatternRegistered PromptPatternRegistered)
- (PromptPatternUnregistered PromptPatternUnregistered)
- (PromptPatternList PromptPatternList)
- (GateAcquired GateAcquired)
- (GateBusy GateBusy)
- (GateReleased GateReleased)
- (InjectionAck InjectionAck)
- (InjectionRejected InjectionRejected)
- (TerminalWorkerLifecycleSnapshot TerminalWorkerLifecycleSnapshot)
- (SubscriptionRetracted SubscriptionRetracted)
- (SessionList SessionList)
- (SessionResolved SessionResolved)
- (Event TerminalEvent)]
+{}
+
+[
+  TerminalConnection.TerminalConnectionRequest
+  TerminalInput.TerminalInputRequest
+  TerminalResize.TerminalResizeRequest
+  TerminalDetachment.TerminalDetachmentRequest
+  TerminalCapture.TerminalCaptureRequest
+  RegisterPromptPattern.RegisterPromptPatternRequest
+  UnregisterPromptPattern.UnregisterPromptPatternRequest
+  ListPromptPatterns.ListPromptPatternsRequest
+  AcquireInputGate.AcquireInputGateRequest
+  ReleaseInputGate.ReleaseInputGateRequest
+  WriteInjection.WriteInjectionRequest
+  SubscribeTerminalWorkerLifecycle.SubscribeTerminalWorkerLifecycleRequest
+  TerminalWorkerLifecycleRetraction.TerminalWorkerLifecycleToken
+  ListSessions.ListSessionsRequest
+  ResolveSession.ResolveSessionRequest
+]
+
+[
+  TerminalReady.TerminalReadyReply
+  TerminalInputAccepted.TerminalInputAcceptedReply
+  TranscriptDelta.TranscriptDeltaReply
+  TerminalResized.TerminalResizedReply
+  TerminalCaptured.TerminalCapturedReply
+  TerminalDetached.TerminalDetachedReply
+  TerminalExited.TerminalExitedReply
+  TerminalRejected.TerminalRejectedReply
+  PromptPatternRegistered.PromptPatternRegisteredReply
+  PromptPatternUnregistered.PromptPatternUnregisteredReply
+  PromptPatternList.PromptPatternListReply
+  GateAcquired.GateAcquiredReply
+  GateBusy.GateBusyReply
+  GateReleased.GateReleasedReply
+  InjectionAck.InjectionAckReply
+  InjectionRejected.InjectionRejectedReply
+  TerminalWorkerLifecycleSnapshot.TerminalWorkerLifecycleSnapshotReply
+  SubscriptionRetracted.SubscriptionRetractedReply
+  SessionList.SessionListReply
+  SessionResolved.SessionResolvedReply
+  Event.TerminalEvent
+]
+
 {
-  TerminalName String
-  TerminalGeneration Integer
-  TerminalSequence Integer
-  TerminalByteCount Integer
-  TerminalRows Integer
-  TerminalColumns Integer
-  TerminalInputBytes (Vector Integer)
-  TerminalTranscriptBytes (Vector Integer)
-  PromptPatternIdentifier String
-  PromptPatternBytes (Vector Integer)
-  InputGateReason String
-  InputGateLeaseIdentifier Integer
-  WirePath String
-  SocketMode Integer
-  SystemPrincipal String
-  UnixUserIdentifier Integer
-  ExitCode Integer
-  TerminalSignalNumber Integer
-  WorkerFailureDetail String
+  TerminalName.String
+  TerminalGeneration.Integer
+  TerminalSequence.Integer
+  TerminalByteCount.Integer
+  TerminalRows.Integer
+  TerminalColumns.Integer
+  TerminalInputBytes.Vector.Integer
+  TerminalTranscriptBytes.Vector.Integer
+  PromptPatternIdentifier.String
+  PromptPatternBytes.Vector.Integer
+  InputGateReason.String
+  InputGateLeaseIdentifier.Integer
+  WirePath.String
+  SocketMode.Integer
+  SystemPrincipal.String
+  UnixUserIdentifier.Integer
+  ExitCode.Integer
+  TerminalSignalNumber.Integer
+  WorkerFailureDetail.String
 
-  Terminal TerminalName
-  Rows TerminalRows
-  Columns TerminalColumns
-  Generation TerminalGeneration
-  Sequence TerminalSequence
-  InputBytes TerminalInputBytes
-  TranscriptBytes TerminalTranscriptBytes
-  PatternIdentifier PromptPatternIdentifier
-  Pattern PromptPattern
-  PromptPatternIdentifierSelection (Optional PromptPatternIdentifier)
-  Lease InputGateLease
-  CurrentHolder InputGateLeaseIdentifier
-  CachedHumanBytes TerminalByteCount
-  Observations (Vector TerminalWorkerLifecycle)
-  Observation TerminalWorkerLifecycle
-  Token TerminalWorkerLifecycleToken
-  Entries (Vector PromptPatternEntry)
-  SessionEntries (Vector SessionEntry)
-  Name TerminalName
-  DataSocketPath WirePath
-  TerminalSocketPath WirePath
-  TerminalSocketMode SocketMode
-  MetaTerminalSocketPath WirePath
-  MetaTerminalSocketMode SocketMode
-  SupervisionSocketPath WirePath
-  SupervisionSocketMode SocketMode
-  StorePath WirePath
+  Terminal.TerminalName
+  Rows.TerminalRows
+  Columns.TerminalColumns
+  Generation.TerminalGeneration
+  Sequence.TerminalSequence
+  InputBytes.TerminalInputBytes
+  TranscriptBytes.TerminalTranscriptBytes
+  PatternIdentifier.PromptPatternIdentifier
+  Pattern.PromptPattern
+  PromptPatternIdentifierSelection.Optional.PromptPatternIdentifier
+  Lease.InputGateLease
+  CurrentHolder.InputGateLeaseIdentifier
+  CachedHumanBytes.TerminalByteCount
+  Observations.Vector.TerminalWorkerLifecycle
+  Observation.TerminalWorkerLifecycle
+  Token.TerminalWorkerLifecycleToken
+  Entries.Vector.PromptPatternEntry
+  SessionEntries.Vector.SessionEntry
+  Name.TerminalName
+  DataSocketPath.WirePath
+  TerminalSocketPath.WirePath
+  TerminalSocketMode.SocketMode
+  MetaTerminalSocketPath.WirePath
+  MetaTerminalSocketMode.SocketMode
+  SupervisionSocketPath.WirePath
+  SupervisionSocketMode.SocketMode
+  StorePath.WirePath
 
-  OwnerIdentity [(UnixUser UnixUserIdentifier) (System SystemPrincipal)]
-  TerminalDetachmentReason [HumanRequested HarnessStopped ViewerReplaced]
-  TerminalRejectionReason [NotConnected InputRejected ResizeRejected CaptureRejected TransportFailed]
-  InjectionRejectionReason [UnknownTerminal UnknownLease GateNotHeld DirtyPrompt TransportFailed]
-  TerminalExitStatus [(Exited ExitCode) (Signaled TerminalSignalNumber) StatusUnavailable]
-  PromptPattern [(LiteralSuffix PromptPatternBytes) (RegexSuffix PromptPatternBytes)]
-  PromptState [NotChecked Clean (Dirty TerminalByteCount)]
-  InputGateLease { InputGateLeaseIdentifier }
-  TerminalWorkerKind [InputWriter ViewerFanout TranscriptScriber OutputReader ChildExitWatcher SocketAcceptLoop AttachConnectionPump]
-  TerminalWorkerStopReason [InputCommandChannelClosed (InputWriteFailed WorkerFailureDetail) OutputCommandChannelClosed TranscriptNoticeChannelClosed OutputReaderFinished (OutputReadFailed WorkerFailureDetail) OutputPortClosed (ChildExited WorkerFailureDetail) (ChildWaitFailed WorkerFailureDetail) (SocketAcceptFailed WorkerFailureDetail) AttachConnectionClosed (AttachConnectionFailed WorkerFailureDetail)]
-  TerminalWorkerStop { TerminalWorkerKind TerminalWorkerStopReason }
-  TerminalWorkerLifecycle [(Started TerminalWorkerKind) (Stopped TerminalWorkerStop)]
-  TerminalOperationKind [TerminalConnection TerminalInput TerminalResize TerminalDetachment TerminalCapture RegisterPromptPattern UnregisterPromptPattern ListPromptPatterns AcquireInputGate ReleaseInputGate WriteInjection SubscribeTerminalWorkerLifecycle TerminalWorkerLifecycleRetraction ListSessions ResolveSession]
+  OwnerIdentity.[UnixUser.UnixUserIdentifier System.SystemPrincipal]
+  TerminalDetachmentReason.[HumanRequested HarnessStopped ViewerReplaced]
+  TerminalRejectionReason.[NotConnected InputRejected ResizeRejected CaptureRejected TransportFailed]
+  InjectionRejectionReason.[UnknownTerminal UnknownLease GateNotHeld DirtyPrompt TransportFailed]
+  TerminalExitStatus.[Exited.ExitCode Signaled.TerminalSignalNumber StatusUnavailable]
+  PromptPattern.[LiteralSuffix.PromptPatternBytes RegexSuffix.PromptPatternBytes]
+  PromptState.[NotChecked Clean Dirty.TerminalByteCount]
+  InputGateLease.{ InputGateLeaseIdentifier }
+  TerminalWorkerKind.[InputWriter ViewerFanout TranscriptScriber OutputReader ChildExitWatcher SocketAcceptLoop AttachConnectionPump]
+  TerminalWorkerStopReason.[InputCommandChannelClosed InputWriteFailed.WorkerFailureDetail OutputCommandChannelClosed TranscriptNoticeChannelClosed OutputReaderFinished OutputReadFailed.WorkerFailureDetail OutputPortClosed ChildExited.WorkerFailureDetail ChildWaitFailed.WorkerFailureDetail SocketAcceptFailed.WorkerFailureDetail AttachConnectionClosed AttachConnectionFailed.WorkerFailureDetail]
+  TerminalWorkerStop.{ TerminalWorkerKind TerminalWorkerStopReason }
+  TerminalWorkerLifecycle.[Started.TerminalWorkerKind Stopped.TerminalWorkerStop]
+  TerminalOperationKind.[TerminalConnection TerminalInput TerminalResize TerminalDetachment TerminalCapture RegisterPromptPattern UnregisterPromptPattern ListPromptPatterns AcquireInputGate ReleaseInputGate WriteInjection SubscribeTerminalWorkerLifecycle TerminalWorkerLifecycleRetraction ListSessions ResolveSession]
 
-  TerminalConnection { Terminal }
-  TerminalInput { Terminal InputBytes }
-  TerminalResize { Terminal Rows Columns }
-  TerminalDetachment { Terminal TerminalDetachmentReason }
-  TerminalCapture { Terminal }
-  RegisterPromptPattern { Terminal Pattern }
-  UnregisterPromptPattern { Terminal PatternIdentifier }
-  ListPromptPatterns { Terminal }
-  AcquireInputGate { Terminal InputGateReason PromptPatternIdentifierSelection }
-  ReleaseInputGate { Terminal Lease }
-  WriteInjection { Terminal Lease InputBytes }
-  SubscribeTerminalWorkerLifecycle { Terminal }
-  TerminalWorkerLifecycleToken { Terminal }
-  ListSessions { }
-  ResolveSession { Name }
+  TerminalConnectionRequest.{ Terminal }
+  TerminalInputRequest.{ Terminal InputBytes }
+  TerminalResizeRequest.{ Terminal Rows Columns }
+  TerminalDetachmentRequest.{ Terminal TerminalDetachmentReason }
+  TerminalCaptureRequest.{ Terminal }
+  RegisterPromptPatternRequest.{ Terminal Pattern }
+  UnregisterPromptPatternRequest.{ Terminal PatternIdentifier }
+  ListPromptPatternsRequest.{ Terminal }
+  AcquireInputGateRequest.{ Terminal InputGateReason PromptPatternIdentifierSelection }
+  ReleaseInputGateRequest.{ Terminal Lease }
+  WriteInjectionRequest.{ Terminal Lease InputBytes }
+  SubscribeTerminalWorkerLifecycleRequest.{ Terminal }
+  TerminalWorkerLifecycleToken.{ Terminal }
+  ListSessionsRequest.{ }
+  ResolveSessionRequest.{ Name }
 
-  TerminalReady { Terminal Generation }
-  TerminalInputAccepted { Terminal Generation }
-  TranscriptDelta { Terminal Sequence TranscriptBytes }
-  TerminalResized { Terminal Rows Columns Generation }
-  TerminalCaptured { Terminal Generation TranscriptBytes }
-  TerminalDetached { Terminal Generation TerminalDetachmentReason }
-  TerminalExited { Terminal Generation TerminalExitStatus }
-  TerminalRejected { Terminal TerminalRejectionReason }
-  PromptPatternRegistered { Terminal PatternIdentifier }
-  PromptPatternUnregistered { Terminal PatternIdentifier }
-  PromptPatternEntry { PatternIdentifier Pattern }
-  PromptPatternList { Terminal Entries }
-  GateAcquired { Terminal Lease PromptState }
-  GateBusy { Terminal CurrentHolder }
-  GateReleased { Terminal Lease CachedHumanBytes }
-  InjectionAck { Terminal Generation Sequence }
-  InjectionRejected { Terminal InjectionRejectionReason }
-  TerminalWorkerLifecycleSnapshot { Terminal Observations }
-  TerminalWorkerLifecycleEvent { Terminal Observation }
-  SubscriptionRetracted { Token }
-  SessionEntry { Name DataSocketPath }
-  SessionList { SessionEntries }
-  SessionResolved { Name DataSocketPath }
+  TerminalReadyReply.{ Terminal Generation }
+  TerminalInputAcceptedReply.{ Terminal Generation }
+  TranscriptDeltaReply.{ Terminal Sequence TranscriptBytes }
+  TerminalResizedReply.{ Terminal Rows Columns Generation }
+  TerminalCapturedReply.{ Terminal Generation TranscriptBytes }
+  TerminalDetachedReply.{ Terminal Generation TerminalDetachmentReason }
+  TerminalExitedReply.{ Terminal Generation TerminalExitStatus }
+  TerminalRejectedReply.{ Terminal TerminalRejectionReason }
+  PromptPatternRegisteredReply.{ Terminal PatternIdentifier }
+  PromptPatternUnregisteredReply.{ Terminal PatternIdentifier }
+  PromptPatternEntry.{ PatternIdentifier Pattern }
+  PromptPatternListReply.{ Terminal Entries }
+  GateAcquiredReply.{ Terminal Lease PromptState }
+  GateBusyReply.{ Terminal CurrentHolder }
+  GateReleasedReply.{ Terminal Lease CachedHumanBytes }
+  InjectionAckReply.{ Terminal Generation Sequence }
+  InjectionRejectedReply.{ Terminal InjectionRejectionReason }
+  TerminalWorkerLifecycleSnapshotReply.{ Terminal Observations }
+  TerminalWorkerLifecycleEventPayload.{ Terminal Observation }
+  SubscriptionRetractedReply.{ Token }
+  SessionEntry.{ Name DataSocketPath }
+  SessionListReply.{ SessionEntries }
+  SessionResolvedReply.{ Name DataSocketPath }
 
-  TerminalEvent [(TerminalWorkerLifecycleEvent TerminalWorkerLifecycleEvent belongs TerminalWorkerLifecycleStream)]
-  TerminalWorkerLifecycleStream (Stream { token.TerminalWorkerLifecycleToken opened.TerminalWorkerLifecycleSnapshot event.TerminalEvent close.TerminalWorkerLifecycleToken })
+  TerminalEvent.[TerminalWorkerLifecycleEvent.TerminalWorkerLifecycleEventPayload]
 
-  TerminalDaemonConfiguration {
-    TerminalSocketPath
-    TerminalSocketMode
-    MetaTerminalSocketPath
-    MetaTerminalSocketMode
-    SupervisionSocketPath
-    SupervisionSocketMode
-    StorePath
-    OwnerIdentity
-  }
+  TerminalDaemonConfiguration.{ TerminalSocketPath TerminalSocketMode MetaTerminalSocketPath MetaTerminalSocketMode SupervisionSocketPath SupervisionSocketMode StorePath OwnerIdentity }
 }
+
+{}
+
+{}
