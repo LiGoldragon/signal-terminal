@@ -31,7 +31,7 @@ optional roots remain explicit. The types block is dotted (`Name.Definition`)
 and carries every helper type.
 
 The generator emits the closed `Input`, `Output`, and `TerminalEvent` roots,
-all payload records, the rkyv codec, the optional NOTA codec, the per-variant
+all payload records, the rkyv codec, the optional DOTOS codec, the per-variant
 `From<Payload>` lifts, and the `signal-frame` transport surface. The current
 signal-frame contract uses `signal_frame::ExchangeFrame<Input, Output>` and
 its matching `ExchangeFrameBody`; `Output::Event(TerminalEvent)` is an
@@ -39,9 +39,9 @@ ordinary typed exchange output, not a schema-generated subscription frame.
 
 This crate owns wire vocabulary and codecs only. Sema classification is a
 daemon-side projection; it never appears on the wire. Because the contract
-owns NOTA round-trip witnesses, it enables `signal-frame/nota-text` through
-its own default `nota-text` feature, which also pulls in the optional
-`nota` dependency that backs the generated and hand-written NOTA derives.
+owns DOTOS round-trip witnesses, it enables `signal-frame/dotos-text` through
+its own default `dotos-text` feature, which also pulls in the optional
+`dotos` dependency that backs the generated and hand-written DOTOS derives.
 
 Terminal-owned introspection records (typed projections of durable Sema rows
 for `persona-introspect`) stay hand-written in `src/introspection.rs`; the
@@ -293,13 +293,13 @@ name terminal-owned inspectable state at the Persona terminal boundary.
 | Byte fields carry one integer per byte on the wire. | `TerminalInputBytes` / `TerminalTranscriptBytes` / `PromptPatternBytes` are `Vector.Integer`; `tests/round_trip.rs` asserts the per-byte text form. |
 | Request payloads do not mint daemon-owned identity. | Callers never supply terminal generations, leases, or sequences the daemon owns; `terminal` mints those. |
 | Write injection is lease-scoped; terminal mints the resulting sequence. | `WriteInjection` carries `InputGateLease`; `InjectionAck` carries the generated `TerminalGeneration` and `TerminalSequence`. |
-| Round-trip witnesses cover every variant in rkyv and NOTA. | `tests/round_trip.rs` covers every request, reply, and event variant; `examples/canonical.nota` holds one canonical text example per family and `tests/canonical_examples.rs` parses and re-emits each. |
+| Round-trip witnesses cover every variant in rkyv and DOTOS. | `tests/round_trip.rs` covers every request, reply, and event variant; `examples/canonical.dotos` holds one canonical text example per family and `tests/canonical_examples.rs` parses and re-emits each. |
 | No stringly-typed dispatch for closed-set states. | All kind / reason / state fields are typed closed enums. |
 | Runtime code stays out of the contract. | No Kameo, Tokio, socket, or storage code. |
 
-## 8 · NOTA codec shape
+## 8 · DOTOS codec shape
 
-The generated codec emits each operation's NOTA head from the variant name.
+The generated codec emits each operation's DOTOS head from the variant name.
 Single-field payload records flatten through their newtype, so a one-field
 operation head carries its inner value directly — e.g.
 `Input::TerminalConnection(TerminalConnection(TerminalName))` encodes as
@@ -313,7 +313,7 @@ round-trip tests carry the operation heads.
 (adding/removing variants, changing payload shapes) are breaking; coordinate
 `harness`, `terminal`, and terminal-cell transport on the upgrade. This six-root dotted-schema migration raises the crate and generated contract
 version to `0.3.0`. The Schema 0.3.0 and schema-rust 0.8.0 producers resolve
-through their `main` branch references, with current Nota and signal-frame
+through their `main` branch references, with current Dotos and signal-frame
 revisions locked coherently.
 
 ## 10 · Possible features (not decided)
@@ -362,11 +362,11 @@ src/
 │   └── lib.rs             — generated WireContract artifact (@generated)
 └── introspection.rs       — hand-written terminal inspectable-state records
 examples/
-└── canonical.nota         — one canonical example per request/reply/event family
+└── canonical.dotos         — one canonical example per request/reply/event family
 tests/
-├── round_trip.rs          — per-variant streaming-frame round trips + NOTA witnesses
-├── canonical_examples.rs  — canonical.nota parser / re-emit witness
-├── introspection.rs       — rkyv + NOTA witnesses for inspection records
+├── round_trip.rs          — per-variant streaming-frame round trips + DOTOS witnesses
+├── canonical_examples.rs  — canonical.dotos parser / re-emit witness
+├── introspection.rs       — rkyv + DOTOS witnesses for inspection records
 └── dependency_boundary.rs — schema-derived / no-retired-helper-deps assertions
 ```
 
@@ -381,3 +381,4 @@ tests/
 - `router/ARCHITECTURE.md`
 - `terminal-cell/ARCHITECTURE.md`
 ```
+

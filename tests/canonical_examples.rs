@@ -1,14 +1,14 @@
-#![cfg(feature = "nota-text")]
+#![cfg(feature = "dotos-text")]
 
 //! Canonical examples round-trip witness.
 //!
-//! Parses `examples/canonical.nota` end-to-end, decoding each record
-//! through its NOTA codec and asserting the re-encoded text equals
+//! Parses `examples/canonical.dotos` end-to-end, decoding each record
+//! through its DOTOS codec and asserting the re-encoded text equals
 //! the canonical form. The selection covers the Path A lifecycle
 //! and one example per request/reply/event family. Exhaustive per-variant
 //! round-trip witnesses already live in `tests/round_trip.rs`.
 
-use nota::{NotaDecode, NotaEncode, NotaSource};
+use dotos::{DotosDecode, DotosEncode, DotosSource};
 use signal_terminal::{
     AcquireInputGateRequest, GateAcquiredReply, GateBusyReply, InjectionAckReply,
     InjectionRejectedReply, InjectionRejectionReason, Input, InputGateLease,
@@ -22,7 +22,7 @@ use signal_terminal::{
     WirePath, WriteInjectionRequest,
 };
 
-const CANONICAL: &str = include_str!("../examples/canonical.nota");
+const CANONICAL: &str = include_str!("../examples/canonical.dotos");
 
 fn operator() -> TerminalName {
     TerminalName::new("operator".to_owned())
@@ -46,19 +46,17 @@ fn data_socket_path() -> WirePath {
 
 fn round_trip<T>(value: T, canonical_text: &str)
 where
-    T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
+    T: DotosEncode + DotosDecode + PartialEq + std::fmt::Debug,
 {
-    let text = value.to_nota();
+    let text = value.to_dotos();
     assert_eq!(text, canonical_text, "encode for {value:?}");
-
-    let decoded = NotaSource::new(canonical_text)
+    let decoded = DotosSource::new(canonical_text)
         .parse::<T>()
         .expect("decode");
     assert_eq!(decoded, value, "decode for {canonical_text}");
-
     assert!(
         CANONICAL.contains(canonical_text),
-        "examples/canonical.nota missing line: {canonical_text}",
+        "examples/canonical.dotos missing line: {canonical_text}",
     );
 }
 
@@ -66,14 +64,14 @@ where
 fn canonical_request_examples_round_trip() {
     round_trip(
         Input::TerminalConnection(TerminalConnectionRequest::new(operator().into())),
-        "(TerminalConnection operator)",
+        "TerminalConnection.operator",
     );
     round_trip(
         Input::TerminalInput(TerminalInputRequest {
             terminal: operator().into(),
             input_bytes: hello_bytes().into(),
         }),
-        "(TerminalInput (operator [104 101 108 108 111]))",
+        "TerminalInput.{operator [104 101 108 108 111]}",
     );
     round_trip(
         Input::TerminalResize(TerminalResizeRequest {
@@ -81,22 +79,22 @@ fn canonical_request_examples_round_trip() {
             rows: TerminalRows::new(24).into(),
             columns: TerminalColumns::new(80).into(),
         }),
-        "(TerminalResize (operator 24 80))",
+        "TerminalResize.{operator 24 80}",
     );
     round_trip(
         Input::TerminalDetachment(TerminalDetachmentRequest {
             terminal: operator().into(),
             terminal_detachment_reason: TerminalDetachmentReason::HumanRequested,
         }),
-        "(TerminalDetachment (operator HumanRequested))",
+        "TerminalDetachment.{operator HumanRequested}",
     );
     round_trip(
         Input::TerminalCapture(TerminalCaptureRequest::new(operator().into())),
-        "(TerminalCapture operator)",
+        "TerminalCapture.operator",
     );
     round_trip(
         Input::ResolveSession(ResolveSessionRequest::new(operator().into())),
-        "(ResolveSession operator)",
+        "ResolveSession.operator",
     );
     round_trip(
         Input::AcquireInputGate(AcquireInputGateRequest {
@@ -104,14 +102,14 @@ fn canonical_request_examples_round_trip() {
             input_gate_reason: InputGateReason::new("send router-delivered command".to_owned()),
             prompt_pattern_identifier_selection: None.into(),
         }),
-        "(AcquireInputGate (operator [send router-delivered command] None))",
+        "AcquireInputGate.{operator (send router-delivered command) None}",
     );
     round_trip(
         Input::ReleaseInputGate(ReleaseInputGateRequest {
             terminal: operator().into(),
             lease: lease().into(),
         }),
-        "(ReleaseInputGate (operator 42))",
+        "ReleaseInputGate.{operator 42}",
     );
     round_trip(
         Input::WriteInjection(WriteInjectionRequest {
@@ -119,17 +117,17 @@ fn canonical_request_examples_round_trip() {
             lease: lease().into(),
             input_bytes: hello_bytes().into(),
         }),
-        "(WriteInjection (operator 42 [104 101 108 108 111]))",
+        "WriteInjection.{operator 42 [104 101 108 108 111]}",
     );
     round_trip(
         Input::SubscribeTerminalWorkerLifecycle(SubscribeTerminalWorkerLifecycleRequest::new(
             operator().into(),
         )),
-        "(SubscribeTerminalWorkerLifecycle operator)",
+        "SubscribeTerminalWorkerLifecycle.operator",
     );
     round_trip(
         Input::TerminalWorkerLifecycleRetraction(token()),
-        "(TerminalWorkerLifecycleRetraction operator)",
+        "TerminalWorkerLifecycleRetraction.operator",
     );
 }
 
@@ -140,14 +138,14 @@ fn canonical_reply_examples_round_trip() {
             terminal: operator().into(),
             generation: TerminalGeneration::new(1).into(),
         }),
-        "(TerminalReady (operator 1))",
+        "TerminalReady.{operator 1}",
     );
     round_trip(
         Output::TerminalInputAccepted(TerminalInputAcceptedReply {
             terminal: operator().into(),
             generation: TerminalGeneration::new(1).into(),
         }),
-        "(TerminalInputAccepted (operator 1))",
+        "TerminalInputAccepted.{operator 1}",
     );
     round_trip(
         Output::GateAcquired(GateAcquiredReply {
@@ -155,14 +153,14 @@ fn canonical_reply_examples_round_trip() {
             lease: lease().into(),
             prompt_state: PromptState::Clean,
         }),
-        "(GateAcquired (operator 42 Clean))",
+        "GateAcquired.{operator 42 Clean}",
     );
     round_trip(
         Output::GateBusy(GateBusyReply {
             terminal: operator().into(),
             current_holder: InputGateLeaseIdentifier::new(41).into(),
         }),
-        "(GateBusy (operator 41))",
+        "GateBusy.{operator 41}",
     );
     round_trip(
         Output::InjectionAck(InjectionAckReply {
@@ -170,25 +168,25 @@ fn canonical_reply_examples_round_trip() {
             generation: TerminalGeneration::new(1).into(),
             sequence: TerminalSequence::new(7).into(),
         }),
-        "(InjectionAck (operator 1 7))",
+        "InjectionAck.{operator 1 7}",
     );
     round_trip(
         Output::InjectionRejected(InjectionRejectedReply {
             terminal: operator().into(),
             injection_rejection_reason: InjectionRejectionReason::UnknownTerminal,
         }),
-        "(InjectionRejected (operator UnknownTerminal))",
+        "InjectionRejected.{operator UnknownTerminal}",
     );
     round_trip(
         Output::SubscriptionRetracted(SubscriptionRetractedReply::new(token().into())),
-        "(SubscriptionRetracted operator)",
+        "SubscriptionRetracted.operator",
     );
     round_trip(
         Output::SessionResolved(SessionResolvedReply {
             name: operator().into(),
             data_socket_path: data_socket_path().into(),
         }),
-        "(SessionResolved (operator /run/persona/terminal/sessions/operator/data.sock))",
+        "SessionResolved.{operator /run/persona/terminal/sessions/operator/data.sock}",
     );
 }
 
@@ -202,6 +200,6 @@ fn canonical_event_example_round_trips() {
                     .into(),
             },
         )),
-        "(Event (TerminalWorkerLifecycleEvent (operator (Started ViewerFanout))))",
+        "Event.TerminalWorkerLifecycleEvent.{operator Started.ViewerFanout}",
     );
 }

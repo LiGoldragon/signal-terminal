@@ -5,10 +5,10 @@
 //! "blunt test names" convention. The wire form is the schema-rust
 //! emission on the current `signal_frame::ExchangeFrame` envelope.
 
-#[cfg(feature = "nota-text")]
-use nota::{NotaDecode, NotaEncode, NotaSource};
+#[cfg(feature = "dotos-text")]
+use dotos::{DotosDecode, DotosEncode, DotosSource};
 use signal_frame::{
-    ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
+    ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, SessionEpoch,
     SignalOperationHeads, SubReply,
 };
 use signal_terminal::{
@@ -71,10 +71,7 @@ fn exchange() -> ExchangeIdentifier {
 
 fn round_trip_request(request: Input) -> Input {
     let expected = request.clone();
-    let frame = Frame::new(FrameBody::Request {
-        exchange: exchange(),
-        request: request.into_request(),
-    });
+    let frame = request.into_frame(exchange());
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
@@ -90,10 +87,13 @@ fn round_trip_request(request: Input) -> Input {
 }
 
 fn round_trip_reply(reply: Output) -> Output {
-    let frame = Frame::new(FrameBody::Reply {
-        exchange: exchange(),
-        reply: Reply::committed(NonEmpty::single(SubReply::Ok(reply))),
-    });
+    let frame = Frame::new(
+        reply.wire_route(),
+        FrameBody::Reply {
+            exchange: exchange(),
+            reply: Reply::committed(NonEmpty::single(SubReply::Ok(reply))),
+        },
+    );
     let bytes = frame.encode_length_prefixed().expect("encode");
     let decoded = Frame::decode_length_prefixed(&bytes).expect("decode");
     match decoded.into_body() {
@@ -115,17 +115,17 @@ fn round_trip_event(event: TerminalEvent) -> TerminalEvent {
     }
 }
 
-#[cfg(feature = "nota-text")]
-fn round_trip_nota<T>(value: T, expected: &str)
+#[cfg(feature = "dotos-text")]
+fn round_trip_dotos<T>(value: T, expected: &str)
 where
-    T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
+    T: DotosEncode + DotosDecode + PartialEq + std::fmt::Debug,
 {
-    let encoded = value.to_nota();
+    let encoded = value.to_dotos();
     assert_eq!(encoded, expected);
 
-    let recovered = NotaSource::new(&encoded)
+    let recovered = DotosSource::new(&encoded)
         .parse::<T>()
-        .expect("decode nota text");
+        .expect("decode dotos text");
     assert_eq!(recovered, value);
 }
 
@@ -427,65 +427,65 @@ fn input_variants_declare_contract_local_operation_heads() {
     );
 }
 
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 #[test]
-fn remodeled_enum_variants_round_trip_through_nota_text() {
-    round_trip_nota(
+fn remodeled_enum_variants_round_trip_through_dotos_text() {
+    round_trip_dotos(
         Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(2).into(),
             terminal_exit_status: TerminalExitStatus::Exited(ExitCode::new(0)),
         }),
-        "(TerminalExited (operator 2 (Exited 0)))",
+        "TerminalExited.{operator 2 Exited.0}",
     );
-    round_trip_nota(
+    round_trip_dotos(
         Output::TerminalExited(TerminalExitedReply {
             terminal: terminal().into(),
             generation: TerminalGeneration::new(2).into(),
             terminal_exit_status: TerminalExitStatus::Signaled(TerminalSignalNumber::new(9)),
         }),
-        "(TerminalExited (operator 2 (Signaled 9)))",
+        "TerminalExited.{operator 2 Signaled.9}",
     );
-    round_trip_nota(
+    round_trip_dotos(
         Output::GateAcquired(GateAcquiredReply {
             terminal: terminal().into(),
             lease: input_gate_lease().into(),
             prompt_state: PromptState::Dirty(TerminalByteCount::new(3)),
         }),
-        "(GateAcquired (operator 42 (Dirty 3)))",
+        "GateAcquired.{operator 42 Dirty.3}",
     );
-    round_trip_nota(
+    round_trip_dotos(
         TerminalWorkerLifecycle::Stopped(TerminalWorkerStop {
             terminal_worker_kind: TerminalWorkerKind::OutputReader,
             terminal_worker_stop_reason: TerminalWorkerStopReason::OutputReadFailed(
                 WorkerFailureDetail::new("broken pipe".to_owned()),
             ),
         }),
-        "(Stopped (OutputReader (OutputReadFailed [broken pipe])))",
+        "Stopped.{OutputReader OutputReadFailed.(broken pipe)}",
     );
 }
 
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 #[test]
 fn byte_fields_carry_one_integer_per_byte_on_the_wire() {
-    round_trip_nota(
+    round_trip_dotos(
         Input::TerminalInput(TerminalInputRequest {
             terminal: terminal().into(),
             input_bytes: input_bytes().into(),
         }),
-        "(TerminalInput (operator [104 101 108 108 111]))",
+        "TerminalInput.{operator [104 101 108 108 111]}",
     );
 }
 
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 #[test]
-fn operation_kind_round_trips_through_nota_text() {
-    round_trip_nota(TerminalOperationKind::WriteInjection, "WriteInjection");
+fn operation_kind_round_trips_through_dotos_text() {
+    round_trip_dotos(TerminalOperationKind::WriteInjection, "WriteInjection");
 }
 
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 #[test]
-fn terminal_daemon_configuration_round_trips_through_nota_text() {
+fn terminal_daemon_configuration_round_trips_through_dotos_text() {
     let configuration = TerminalDaemonConfiguration {
         terminal_socket_path: WirePath::new("/run/persona/X/terminal.sock".to_owned()).into(),
         terminal_socket_mode: SocketMode::new(0o600).into(),
@@ -501,14 +501,14 @@ fn terminal_daemon_configuration_round_trips_through_nota_text() {
         owner_identity: OwnerIdentity::UnixUser(UnixUserIdentifier::new(1000)),
     };
 
-    let text = configuration.to_nota();
-    let recovered = NotaSource::new(&text)
+    let text = configuration.to_dotos();
+    let recovered = DotosSource::new(&text)
         .parse::<TerminalDaemonConfiguration>()
         .expect("decode configuration");
 
     assert_eq!(recovered, configuration);
     assert!(text.contains("/run/persona/X/terminal.sock"));
-    assert!(text.contains("(UnixUser 1000)"));
+    assert!(text.contains("UnixUser.1000"));
 }
 
 #[test]

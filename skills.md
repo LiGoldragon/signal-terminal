@@ -119,11 +119,11 @@ Signal endpoint.
 - **No runtime code.** No Kameo, Tokio, socket, storage, or daemon
   glue in this crate.
 - **Round trips cover every variant.** rkyv length-prefixed frame
-  round trips in `tests/round_trip.rs`; canonical NOTA examples in
-  `examples/canonical.nota` with a parser test. Introspection
+  round trips in `tests/round_trip.rs`; canonical DOTOS examples in
+  `examples/canonical.dotos` with a parser test. Introspection
   records are exercised in `tests/introspection.rs`. The manifest enables
-  the crate-local `nota-text` feature by default and maps it to
-  `signal-frame/nota-text` for those text witnesses.
+  the crate-local `dotos-text` feature by default and maps it to
+  `signal-frame/dotos-text` for those text witnesses.
 - **Pin upstream contracts via a named API reference.** Cargo deps
   declare `git = "..."` with a named branch/bookmark, never raw
   `rev = "..."`.
@@ -136,7 +136,7 @@ Signal endpoint.
    names a positive "entity not in our state" rejection
    (`UnknownX` shape), call out that it is a closed positive
    rejection, not a polling-shape placeholder.
-2. Add round-trip witnesses through rkyv and NOTA.
+2. Add round-trip witnesses through rkyv and DOTOS.
 3. Update consumers' rejection handling.
 
 ### Adding a new subscription kind
@@ -155,9 +155,9 @@ Signal endpoint.
 4. Witness the full subscribe → event → retract → ack → end
    lifecycle.
 
-## NOTA codec shape
+## DOTOS codec shape
 
-schema-rust emits each request's NOTA head from the
+schema-rust emits each request's DOTOS head from the
 contract-local operation name. For example,
 `Input::TerminalWorkerLifecycleRetraction(TerminalWorkerLifecycleToken { .. })`
 encodes as `(TerminalWorkerLifecycleRetraction (...))`. Canonical
@@ -173,3 +173,4 @@ examples and round-trip tests use the operation heads.
   `signal-system`'s `skills.md`, and `signal-criome`'s
   `skills.md` — sibling contracts using the same Path A subscription
   discipline.
+

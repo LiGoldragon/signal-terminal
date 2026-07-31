@@ -1,7 +1,7 @@
-#[cfg(feature = "nota-text")]
-use nota::{NotaDecode, NotaEncode, NotaSource};
+#[cfg(feature = "dotos-text")]
+use dotos::{DotosDecode, DotosEncode, DotosSource};
 use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 use signal_terminal::TerminalIntrospectionSnapshot;
 use signal_terminal::{
     Output, TerminalDeliveryAttemptObservation, TerminalDeliveryAttemptState,
@@ -36,17 +36,17 @@ where
     recovered
 }
 
-#[cfg(feature = "nota-text")]
-fn round_trip_nota<T>(value: T, expected: &str)
+#[cfg(feature = "dotos-text")]
+fn round_trip_dotos<T>(value: T, expected: &str)
 where
-    T: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
+    T: DotosEncode + DotosDecode + PartialEq + std::fmt::Debug,
 {
-    let encoded = value.to_nota();
+    let encoded = value.to_dotos();
     assert_eq!(encoded, expected);
 
-    let recovered = NotaSource::new(&encoded)
+    let recovered = DotosSource::new(&encoded)
         .parse::<T>()
-        .expect("decode nota text");
+        .expect("decode dotos text");
     assert_eq!(recovered, value);
 }
 
@@ -70,24 +70,24 @@ fn terminal_session_observation_is_contract_owned_introspection_record() {
     assert_eq!(observation.state(), TerminalSessionState::Ready);
 }
 
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 #[test]
-fn terminal_session_observation_typed_control_and_data_paths_round_trip_via_nota_text() {
+fn terminal_session_observation_typed_control_and_data_paths_round_trip_via_dotos_text() {
     let observation = TerminalSessionObservation::ready(
         terminal(),
         "/tmp/terminal/operator/control.sock",
         "/tmp/terminal/operator/data.sock",
     );
 
-    let encoded = observation.to_nota();
+    let encoded = observation.to_dotos();
     assert_eq!(
         encoded,
-        "(operator /tmp/terminal/operator/control.sock /tmp/terminal/operator/data.sock 1 0 Ready)"
+        "{operator /tmp/terminal/operator/control.sock /tmp/terminal/operator/data.sock 1 0 Ready}"
     );
 
-    let recovered = NotaSource::new(&encoded)
+    let recovered = DotosSource::new(&encoded)
         .parse::<TerminalSessionObservation>()
-        .expect("decode nota");
+        .expect("decode dotos");
     assert_eq!(recovered, observation);
     assert_eq!(
         recovered.control_socket_path().as_str(),
@@ -159,10 +159,10 @@ fn terminal_session_archive_observation_round_trips() {
     assert_eq!(observation.state(), TerminalSessionArchiveState::Archived);
 }
 
-#[cfg(feature = "nota-text")]
+#[cfg(feature = "dotos-text")]
 #[test]
-fn terminal_introspection_snapshot_round_trips_through_nota_text() {
-    round_trip_nota(
+fn terminal_introspection_snapshot_round_trips_through_dotos_text() {
+    round_trip_dotos(
         TerminalIntrospectionSnapshot {
             sessions: vec![TerminalSessionObservation::ready(
                 terminal(),
@@ -186,6 +186,6 @@ fn terminal_introspection_snapshot_round_trips_through_nota_text() {
                 "session rotated",
             )],
         },
-        "([(operator /run/persona/engine/terminal.control.sock /run/persona/engine/terminal.data.sock 1 0 Ready)] [(7 operator WriteInjection Started)] [] [] [(operator Ready 2)] [(operator [session rotated] Archived)])",
+        "{[{operator /run/persona/engine/terminal.control.sock /run/persona/engine/terminal.data.sock 1 0 Ready}] [{7 operator WriteInjection Started}] [] [] [{operator Ready 2}] [{operator (session rotated) Archived}]}",
     );
 }
