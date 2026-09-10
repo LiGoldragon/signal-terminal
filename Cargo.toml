@@ -1,6 +1,6 @@
 [package]
 name         = "signal-terminal"
-version      = "0.4.0"
+version      = "1.0.0"
 edition      = "2024"
 rust-version = "1.89"
 license      = "MIT OR Apache-2.0"
@@ -16,18 +16,15 @@ path = "src/lib.rs"
 
 [features]
 default = []
-datom = ["dep:datom-codec"]
+datom = ["dep:datom-codec", "dep:protos"]
 
 [dependencies]
-datom-codec = { git = "https://github.com/LiGoldragon/datom-codec.git", rev = "cd0255d774847826d53d063ab856ebe0dd09e250", optional = true }
+datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "2dad91afce6237d772767bd4ab19f31276e6999e", optional = true }
+protos = { git = "https://github.com/LiGoldragon/protos", rev = "aac95b0d08a4c7eb7f73c8ea18309f9e2e89315f", optional = true }
 rkyv         = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
-signal-frame = { git = "https://github.com/LiGoldragon/signal-frame.git", rev = "ca72b2d1151f5b3df536295b2ba68f039536ec19", default-features = false }
-thiserror    = "2"
 
 [build-dependencies]
-protos = { git = "https://github.com/LiGoldragon/protos.git", rev = "9bce5ed8efadeb157811b256aa69a1f88cd5314f" }
-schema = { git = "https://github.com/LiGoldragon/schema.git", rev = "c966e0ce30bbc53c809941cf462b7b6447fff185" }
-schema-rust = { package = "schema-rust", git = "https://github.com/LiGoldragon/schema-rust.git", rev = "6179a7cf1394083244dd3f3e1d2709f9ec08f7db" }
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "6e5ad400c2aed197c5daadf9a8bb6abf183b1439" }
 
 [lints.rust]
 unsafe_code = "forbid"

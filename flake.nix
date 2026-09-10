@@ -1,45 +1,30 @@
 {
-  description = "signal-terminal - Signal contract for harness to terminal transport";
+  description = "signal-terminal — generated terminal Signal contract";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    fenix = {
-      url = "github:nix-community/fenix";
+    rust-build = {
+      url = "github:LiGoldragon/rust-build";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    crane.url = "github:ipetkov/crane";
   };
 
-  outputs = { self, nixpkgs, flake-utils, fenix, crane }:
+  outputs = { self, nixpkgs, flake-utils, rust-build }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        toolchain = fenix.packages.${system}.complete.withComponents [
-          "cargo"
-          "rustc"
-          "rustfmt"
-          "clippy"
-          "rust-analyzer"
-          "rust-src"
-        ];
-        craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
-        # Include generated-contract inputs that Cargo's source filter does
-        # not know about.
-        examplesFilter = path: _type: builtins.match ".*/examples(/.*)?$" path != null;
-        schemaFilter = path: _type: builtins.match ".*/schema(/.*)?$" path != null;
-        sourceFilter = path: type:
-          (craneLib.filterCargoSources path type) || (examplesFilter path type) || (schemaFilter path type);
-        src = pkgs.lib.cleanSourceWith {
-          src = ./.;
-          filter = sourceFilter;
-          name = "source";
+        rust = rust-build.lib.${system}.fromToolchainFile pkgs {
+          file = ./rust-toolchain.toml;
+          sha256 = "sha256-gh/xTkxKHL4eiRXzWv8KP7vfjSk61Iq48x47BEDFgfk=";
         };
-        cargoVendorDir = craneLib.vendorCargoDeps { inherit src; };
-        commonArgs = {
-          inherit src cargoVendorDir;
-          strictDeps = true;
+        inherit (rust) craneLib toolchain;
+        ethosFilter = path: type: type == "regular" && pkgs.lib.hasSuffix ".ethos" path;
+        src = rust.cleanSource {
+          root = ./.;
+          extraFilters = [ ethosFilter ];
         };
+        commonArgs = { inherit src; strictDeps = true; nativeBuildInputs = [ pkgs.rustfmt ]; };
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
       in
       {
@@ -47,13 +32,13 @@
         checks = {
           build = craneLib.cargoBuild (commonArgs // { inherit cargoArtifacts; });
           test  = craneLib.cargoTest  (commonArgs // { inherit cargoArtifacts; });
-          test-round-trip = craneLib.cargoTest (commonArgs // {
+          test-generated-contract = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
-            cargoTestExtraArgs = "--test round_trip";
+            cargoTestExtraArgs = "--test generated_contract";
           });
-          test-introspection = craneLib.cargoTest (commonArgs // {
+          test-datom-contract = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
-            cargoTestExtraArgs = "--test introspection";
+            cargoTestExtraArgs = "--features datom --test generated_contract";
           });
           test-doc = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
@@ -64,6 +49,12 @@
             RUSTDOCFLAGS = "-D warnings";
           });
           fmt = craneLib.cargoFmt { inherit src; };
+          no-free-functions = pkgs.runCommand "signal-terminal-no-free-functions" { inherit src; } ''
+            ${builtins.readFile ./checks/no-free-functions.sh}
+          '';
+          no-inherent-methods = pkgs.runCommand "signal-terminal-no-inherent-methods" { inherit src; } ''
+            ${builtins.readFile ./checks/no-inherent-methods.sh}
+          '';
           clippy = craneLib.cargoClippy (commonArgs // {
             inherit cargoArtifacts;
             cargoClippyExtraArgs = "--all-targets -- -D warnings";
