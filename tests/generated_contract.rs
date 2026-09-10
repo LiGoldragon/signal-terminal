@@ -14,6 +14,11 @@ fn list_sessions_query_and_reply_round_trip_through_received_bytes() {
         Signal::<Response>::from(response.signalize().expect("signalize").bytes().to_vec());
     assert_eq!(received.restore().expect("restore"), response);
 }
+#[test]
+fn malformed_query_archive_is_rejected() {
+    assert!(Signal::<Query>::from(vec![1, 2, 3]).restore().is_err());
+}
+
 #[cfg(feature = "datom")]
 #[test]
 fn list_sessions_round_trips_as_datom_text() {

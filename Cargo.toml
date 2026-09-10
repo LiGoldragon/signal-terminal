@@ -1,6 +1,6 @@
 [package]
 name         = "signal-terminal"
-version      = "1.0.0"
+version      = "1.0.1"
 edition      = "2024"
 rust-version = "1.89"
 license      = "MIT OR Apache-2.0"
@@ -24,7 +24,7 @@ protos = { git = "https://github.com/LiGoldragon/protos", rev = "aac95b0d08a4c7e
 rkyv         = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
 
 [build-dependencies]
-ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "6e5ad400c2aed197c5daadf9a8bb6abf183b1439" }
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "daf007296a19ad2f9c8a1e67e102b2e3f09db327" }
 
 [lints.rust]
 unsafe_code = "forbid"
