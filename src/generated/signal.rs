@@ -1,50 +1,97 @@
 #![allow(dead_code, non_camel_case_types, non_snake_case)]
+#[rustfmt::skip]
 pub type TerminalName = String;
+#[rustfmt::skip]
 pub type TerminalGeneration = i64;
+#[rustfmt::skip]
 pub type TerminalSequence = i64;
+#[rustfmt::skip]
 pub type TerminalByteCount = i64;
+#[rustfmt::skip]
 pub type TerminalRows = i64;
+#[rustfmt::skip]
 pub type TerminalColumns = i64;
+#[rustfmt::skip]
 pub type TerminalInputBytes = std::vec::Vec<i64>;
+#[rustfmt::skip]
 pub type TerminalTranscriptBytes = std::vec::Vec<i64>;
+#[rustfmt::skip]
 pub type PromptPatternIdentifier = String;
+#[rustfmt::skip]
 pub type PromptPatternBytes = std::vec::Vec<i64>;
+#[rustfmt::skip]
 pub type InputGateReason = String;
+#[rustfmt::skip]
 pub type InputGateLeaseIdentifier = i64;
+#[rustfmt::skip]
 pub type WirePath = String;
+#[rustfmt::skip]
 pub type SocketMode = i64;
+#[rustfmt::skip]
 pub type SystemPrincipal = String;
+#[rustfmt::skip]
 pub type UnixUserIdentifier = i64;
+#[rustfmt::skip]
 pub type ExitCode = i64;
+#[rustfmt::skip]
 pub type TerminalSignalNumber = i64;
+#[rustfmt::skip]
 pub type WorkerFailureDetail = String;
+#[rustfmt::skip]
 pub type Terminal = TerminalName;
+#[rustfmt::skip]
 pub type Rows = TerminalRows;
+#[rustfmt::skip]
 pub type Columns = TerminalColumns;
+#[rustfmt::skip]
 pub type Generation = TerminalGeneration;
+#[rustfmt::skip]
 pub type Sequence = TerminalSequence;
+#[rustfmt::skip]
 pub type InputBytes = TerminalInputBytes;
+#[rustfmt::skip]
 pub type TranscriptBytes = TerminalTranscriptBytes;
+#[rustfmt::skip]
 pub type PatternIdentifier = PromptPatternIdentifier;
+#[rustfmt::skip]
 pub type Pattern = PromptPattern;
+#[rustfmt::skip]
 pub type PromptPatternIdentifierSelection = std::option::Option<PromptPatternIdentifier>;
+#[rustfmt::skip]
 pub type Lease = InputGateLease;
+#[rustfmt::skip]
 pub type CurrentHolder = InputGateLeaseIdentifier;
+#[rustfmt::skip]
 pub type CachedHumanBytes = TerminalByteCount;
+#[rustfmt::skip]
 pub type Observations = std::vec::Vec<TerminalWorkerLifecycle>;
+#[rustfmt::skip]
 pub type Observation = TerminalWorkerLifecycle;
+#[rustfmt::skip]
 pub type Token = TerminalWorkerLifecycleToken;
+#[rustfmt::skip]
 pub type Entries = std::vec::Vec<PromptPatternEntry>;
+#[rustfmt::skip]
 pub type SessionEntries = std::vec::Vec<SessionEntry>;
+#[rustfmt::skip]
 pub type Name = TerminalName;
+#[rustfmt::skip]
 pub type DataSocketPath = WirePath;
+#[rustfmt::skip]
 pub type TerminalSocketPath = WirePath;
+#[rustfmt::skip]
 pub type TerminalSocketMode = SocketMode;
+#[rustfmt::skip]
 pub type MetaTerminalSocketPath = WirePath;
+#[rustfmt::skip]
 pub type MetaTerminalSocketMode = SocketMode;
+#[rustfmt::skip]
 pub type SupervisionSocketPath = WirePath;
+#[rustfmt::skip]
 pub type SupervisionSocketMode = SocketMode;
+#[rustfmt::skip]
 pub type StorePath = WirePath;
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -54,6 +101,7 @@ pub enum OwnerIdentity {
     UnixUser(UnixUserIdentifier),
     System(SystemPrincipal),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -64,6 +112,7 @@ pub enum TerminalDetachmentReason {
     HarnessStopped,
     ViewerReplaced,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -76,6 +125,7 @@ pub enum TerminalRejectionReason {
     CaptureRejected,
     TransportFailed,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -88,6 +138,7 @@ pub enum InjectionRejectionReason {
     DirtyPrompt,
     TransportFailed,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -98,6 +149,7 @@ pub enum TerminalExitStatus {
     Signaled(TerminalSignalNumber),
     StatusUnavailable,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -107,6 +159,7 @@ pub enum PromptPattern {
     LiteralSuffix(PromptPatternBytes),
     RegexSuffix(PromptPatternBytes),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -117,6 +170,7 @@ pub enum PromptState {
     Clean,
     Dirty(TerminalByteCount),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -125,6 +179,7 @@ pub enum PromptState {
 pub struct InputGateLease {
     pub input_gate_lease_identifier: InputGateLeaseIdentifier,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -139,6 +194,7 @@ pub enum TerminalWorkerKind {
     SocketAcceptLoop,
     AttachConnectionPump,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -158,6 +214,7 @@ pub enum TerminalWorkerStopReason {
     AttachConnectionClosed,
     AttachConnectionFailed(WorkerFailureDetail),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -167,6 +224,7 @@ pub struct TerminalWorkerStop {
     pub terminal_worker_kind: TerminalWorkerKind,
     pub terminal_worker_stop_reason: TerminalWorkerStopReason,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -176,6 +234,7 @@ pub enum TerminalWorkerLifecycle {
     Started(TerminalWorkerKind),
     Stopped(TerminalWorkerStop),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -198,6 +257,7 @@ pub enum TerminalOperationKind {
     ListSessions,
     ResolveSession,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -206,6 +266,7 @@ pub enum TerminalOperationKind {
 pub struct TerminalConnectionRequest {
     pub terminal: Terminal,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -215,6 +276,7 @@ pub struct TerminalInputRequest {
     pub terminal: Terminal,
     pub input_bytes: InputBytes,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -225,6 +287,7 @@ pub struct TerminalResizeRequest {
     pub rows: Rows,
     pub columns: Columns,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -234,6 +297,7 @@ pub struct TerminalDetachmentRequest {
     pub terminal: Terminal,
     pub terminal_detachment_reason: TerminalDetachmentReason,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -242,6 +306,7 @@ pub struct TerminalDetachmentRequest {
 pub struct TerminalCaptureRequest {
     pub terminal: Terminal,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -251,6 +316,7 @@ pub struct RegisterPromptPatternRequest {
     pub terminal: Terminal,
     pub pattern: Pattern,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -260,6 +326,7 @@ pub struct UnregisterPromptPatternRequest {
     pub terminal: Terminal,
     pub pattern_identifier: PatternIdentifier,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -268,6 +335,7 @@ pub struct UnregisterPromptPatternRequest {
 pub struct ListPromptPatternsRequest {
     pub terminal: Terminal,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -278,6 +346,7 @@ pub struct AcquireInputGateRequest {
     pub input_gate_reason: InputGateReason,
     pub prompt_pattern_identifier_selection: PromptPatternIdentifierSelection,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -287,6 +356,7 @@ pub struct ReleaseInputGateRequest {
     pub terminal: Terminal,
     pub lease: Lease,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -297,6 +367,7 @@ pub struct WriteInjectionRequest {
     pub lease: Lease,
     pub input_bytes: InputBytes,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -305,6 +376,7 @@ pub struct WriteInjectionRequest {
 pub struct SubscribeTerminalWorkerLifecycleRequest {
     pub terminal: Terminal,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -313,12 +385,14 @@ pub struct SubscribeTerminalWorkerLifecycleRequest {
 pub struct TerminalWorkerLifecycleToken {
     pub terminal: Terminal,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
     derive(datom_codec::Datomizable, datom_codec::Compositional)
 )]
 pub struct ListSessionsRequest {}
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -327,6 +401,7 @@ pub struct ListSessionsRequest {}
 pub struct ResolveSessionRequest {
     pub name: Name,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -336,6 +411,7 @@ pub struct TerminalReadyReply {
     pub terminal: Terminal,
     pub generation: Generation,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -345,6 +421,7 @@ pub struct TerminalInputAcceptedReply {
     pub terminal: Terminal,
     pub generation: Generation,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -355,6 +432,7 @@ pub struct TranscriptDeltaReply {
     pub sequence: Sequence,
     pub transcript_bytes: TranscriptBytes,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -366,6 +444,7 @@ pub struct TerminalResizedReply {
     pub columns: Columns,
     pub generation: Generation,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -376,6 +455,7 @@ pub struct TerminalCapturedReply {
     pub generation: Generation,
     pub transcript_bytes: TranscriptBytes,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -386,6 +466,7 @@ pub struct TerminalDetachedReply {
     pub generation: Generation,
     pub terminal_detachment_reason: TerminalDetachmentReason,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -396,6 +477,7 @@ pub struct TerminalExitedReply {
     pub generation: Generation,
     pub terminal_exit_status: TerminalExitStatus,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -405,6 +487,7 @@ pub struct TerminalRejectedReply {
     pub terminal: Terminal,
     pub terminal_rejection_reason: TerminalRejectionReason,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -414,6 +497,7 @@ pub struct PromptPatternRegisteredReply {
     pub terminal: Terminal,
     pub pattern_identifier: PatternIdentifier,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -423,6 +507,7 @@ pub struct PromptPatternUnregisteredReply {
     pub terminal: Terminal,
     pub pattern_identifier: PatternIdentifier,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -432,6 +517,7 @@ pub struct PromptPatternEntry {
     pub pattern_identifier: PatternIdentifier,
     pub pattern: Pattern,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -441,6 +527,7 @@ pub struct PromptPatternListReply {
     pub terminal: Terminal,
     pub entries: Entries,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -451,6 +538,7 @@ pub struct GateAcquiredReply {
     pub lease: Lease,
     pub prompt_state: PromptState,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -460,6 +548,7 @@ pub struct GateBusyReply {
     pub terminal: Terminal,
     pub current_holder: CurrentHolder,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -470,6 +559,7 @@ pub struct GateReleasedReply {
     pub lease: Lease,
     pub cached_human_bytes: CachedHumanBytes,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -480,6 +570,7 @@ pub struct InjectionAckReply {
     pub generation: Generation,
     pub sequence: Sequence,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -489,6 +580,7 @@ pub struct InjectionRejectedReply {
     pub terminal: Terminal,
     pub injection_rejection_reason: InjectionRejectionReason,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -498,6 +590,7 @@ pub struct TerminalWorkerLifecycleSnapshotReply {
     pub terminal: Terminal,
     pub observations: Observations,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -507,6 +600,7 @@ pub struct TerminalWorkerLifecycleEventPayload {
     pub terminal: Terminal,
     pub observation: Observation,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -515,6 +609,7 @@ pub struct TerminalWorkerLifecycleEventPayload {
 pub struct SubscriptionRetractedReply {
     pub token: Token,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -524,6 +619,7 @@ pub struct SessionEntry {
     pub name: Name,
     pub data_socket_path: DataSocketPath,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -532,6 +628,7 @@ pub struct SessionEntry {
 pub struct SessionListReply {
     pub session_entries: SessionEntries,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -541,6 +638,7 @@ pub struct SessionResolvedReply {
     pub name: Name,
     pub data_socket_path: DataSocketPath,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -549,6 +647,7 @@ pub struct SessionResolvedReply {
 pub enum TerminalEvent {
     TerminalWorkerLifecycleEvent(TerminalWorkerLifecycleEventPayload),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -564,6 +663,7 @@ pub struct TerminalDaemonConfiguration {
     pub store_path: StorePath,
     pub owner_identity: OwnerIdentity,
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
@@ -586,6 +686,7 @@ pub enum Query {
     ListSessions(ListSessionsRequest),
     ResolveSession(ResolveSessionRequest),
 }
+#[rustfmt::skip]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = "datom",
