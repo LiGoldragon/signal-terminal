@@ -40,6 +40,10 @@
             inherit cargoArtifacts;
             cargoTestExtraArgs = "--features datom --test generated_contract";
           });
+          test-datom-wire = craneLib.cargoTest (commonArgs // {
+            inherit cargoArtifacts;
+            cargoTestExtraArgs = "--features datom --test wire_equality";
+          });
           test-doc = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
             cargoTestExtraArgs = "--doc";
