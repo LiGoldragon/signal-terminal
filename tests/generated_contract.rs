@@ -8,7 +8,7 @@ fn list_sessions_query_and_reply_round_trip_through_received_bytes() {
     let received = Signal::<Query>::from(query.signalize().expect("signalize").bytes().to_vec());
     assert_eq!(received.restore().expect("restore"), query);
     let response = Response::SessionList(SessionListReply {
-        session_entries: vec![],
+        session_entries: signal_terminal::SessionEntries(vec![]),
     });
     let received =
         Signal::<Response>::from(response.signalize().expect("signalize").bytes().to_vec());
